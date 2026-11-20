@@ -1048,8 +1048,9 @@
   }
 </style>
 <!-- PDF / Word 简历解析（CDN，加载失败时仍可手动粘贴文本） -->
-<script src="/vendor/pdf.min.js"></script>
-<script src="/vendor/mammoth.browser.min.js"></script>
+<!-- 用相对路径，兼容部署在子目录（如 GitHub Pages 的 /ai-job-resume-helper/） -->
+<script src="vendor/pdf.min.js"></script>
+<script src="vendor/mammoth.browser.min.js"></script>
 </head>
 <body>
 
@@ -1129,51 +1130,6 @@
     </div>
 
     <div class="messages" id="messages">
-    <div class="hero" id="heroPanel">
-      <div class="hero-head">
-        <div>
-          <span class="hero-eyebrow">✨ 五大功能 · 全专业岗位适配</span>
-          <h2 class="hero-title">今天想先练哪一项？</h2>
-          <p class="hero-sub">从简历打磨到模拟面试，点一张卡片直接开始；也可以随时从左侧切换。</p>
-        </div>
-        <button class="hero-close" id="heroClose" title="收起引导">×</button>
-      </div>
-      <div class="hero-grid">
-        <button class="hero-card" data-hero-mode="diagnose">
-          <span class="hc-ico" style="background:#DBEAFE">🩺</span>
-          <span class="hc-title">简历诊断</span>
-          <span class="hc-desc">逐条挑出问题，给出可执行的修改建议</span>
-          <span class="hc-go">开始诊断 →</span>
-        </button>
-        <button class="hero-card" data-hero-mode="polish">
-          <span class="hc-ico" style="background:#E0F2FE">✨</span>
-          <span class="hc-title">简历润色</span>
-          <span class="hc-desc">逐处对照，告诉你改了哪里、为什么改</span>
-          <span class="hc-go">开始润色 →</span>
-        </button>
-        <button class="hero-card primary" data-hero-mode="interview">
-          <span class="hc-ico">🎙️</span>
-          <span class="hc-title">AI 模拟面试</span>
-          <span class="hc-desc">一次一题，答完先肯定再建议，最后给思路</span>
-          <span class="hc-go">开始面试 →</span>
-        </button>
-        <button class="hero-card" data-hero-mode="bank">
-          <span class="hc-ico" style="background:#CFFAFE">📚</span>
-          <span class="hc-title">面试题库</span>
-          <span class="hc-desc">按岗位一次列出 5-8 题及答题思路</span>
-          <span class="hc-go">生成题库 →</span>
-        </button>
-        <button class="hero-card" data-hero-mode="tips">
-          <span class="hc-ico" style="background:#E0F2FE">💡</span>
-          <span class="hc-title">求职提示</span>
-          <span class="hc-desc">投递简历与挑选实习单位的注意事项</span>
-          <span class="hc-go">查看提示 →</span>
-        </button>
-      </div>
-      <div class="hero-foot">
-        <span>💡 所有建议以个人思考为主，请勿直接复制 AI 内容投递；拿不准就直接问，我会按当前岗位给具体建议。</span>
-      </div>
-    </div>
       <div class="msg-list" id="msgList"></div>
     </div>
 
@@ -1235,6 +1191,7 @@
       <div class="admin-row">
         <input type="password" id="adminToken" placeholder="输入管理员口令">
         <button class="btn primary" id="adminViewBtn">查看</button>
+        <button class="btn" id="adminExportBtn" title="把本机浏览器里保存的记录导出为 jsonl 文件">导出本机记录</button>
       </div>
       <p class="admin-msg" id="adminMsg"></p>
       <div class="admin-list" id="adminList"></div>
@@ -1246,7 +1203,7 @@
 <div class="mask" id="fbMask">
   <div class="modal">
     <h2>建议反馈</h2>
-    <p class="sub">你的建议会保存在「对话记录与建议/建议」文件夹并展示在建议墙；历史使用记录仅管理员可见。</p>
+    <p class="sub">建议会立刻保存在你这台电脑的浏览器里，并显示在下方建议墙（不会丢失）。<b>在线版没有服务器写入权限</b>，如需落成文件「对话记录与建议/建议/feedback.json」，请双击项目里的「本地预览-双击启动.bat」用本机模式提交。历史使用记录仅管理员可见。</p>
     <div class="stats-strip" id="statsStrip">
       <div class="stats-item"><span class="stats-num" id="statVisitors">—</span><span class="stats-label">位用户用过</span></div>
       <div class="stats-item"><span class="stats-num" id="statConv">—</span><span class="stats-label">次提问</span></div>
@@ -1383,11 +1340,26 @@
     try{u=(localStorage.getItem('aiJobAssistantUser')||'').trim();}catch(e){}
     return u||'匿名用户';
   }
+  /* 记录一律先存浏览器本地（在线版无法写服务器文件夹），能连上后端时再额外同步一份 */
+  var REC_LOCAL_KEY = 'aiJobAssistantRecordsLocal';
+  function localRecords(){
+    try{var a=JSON.parse(localStorage.getItem(REC_LOCAL_KEY)||'[]');return Array.isArray(a)?a:[];}catch(e){return [];}
+  }
+  function saveLocalRecord(rec){
+    try{
+      var a=localRecords();
+      a.push(rec);
+      if(a.length>800)a=a.slice(-800);
+      localStorage.setItem(REC_LOCAL_KEY,JSON.stringify(a));
+    }catch(e){}
+  }
   function logRecord(role,content){
+    var rec={time:new Date().toISOString(),user:currentUser(),mode:state.mode,role:role,content:String(content||'').slice(0,20000)};
+    saveLocalRecord(rec);
     if(typeof fetch!=='function')return;
     try{
       fetch(API_BASE+'/api/records',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({user:currentUser(),mode:state.mode,role:role,content:String(content||'').slice(0,20000)})
+        body:JSON.stringify(rec)
       }).catch(function(){});
     }catch(e){}
   }
@@ -1480,6 +1452,21 @@
     scrollEl.scrollTop = scrollEl.scrollHeight;
   }
   function removeTyping(){if(typingEl&&typingEl.parentNode)typingEl.parentNode.removeChild(typingEl);typingEl=null;}
+  // 在「正在输入…」气泡下追加一行状态说明（如自动重试提示）
+  function typingNote(msg){
+    if(!typingEl)return;
+    var b=typingEl.querySelector('.bubble.ai');
+    if(!b)return;
+    var n=b.querySelector('.typing-note');
+    if(!n){
+      n=document.createElement('span');
+      n.className='typing-note';
+      n.style.cssText='display:block;margin-top:8px;font-size:12px;line-height:1.5;color:#6B8AAF';
+      b.appendChild(n);
+    }
+    n.textContent=msg||'';
+    if(scrollEl)scrollEl.scrollTop=scrollEl.scrollHeight;
+  }
 
   function isRefusal(text){
     var t = String(text||'');
@@ -1546,7 +1533,8 @@
         '面向 AI/计算机实习岗优化措辞，只优化表达，不得编造。按原文顺序，只对确实做了改动的段落逐处列块；严禁列出没有改动的行。',
         '每块只用三行纯文本标签（标签本身不加任何星号或加粗）：第一行「原文：」+ 改前原句；第二行「润色后：」+ 可直接替换原文那一整处的完整句子（不是片段、不用省略号）；第三行「为什么改：」+ 一句话理由。多块之间空一行。',
         '【个人信息铁律】姓名、手机号、邮箱、居住城市、个人网站/GitHub、求职意向、教育背景、公司名、职位名、时间日期等个人信息与客观事实，必须逐字原样保留，一个字都不能删改，也不能用【】替代；【】只允许用于原文缺失、需要本人补充的字段。',
-        '【展示铁律】不要输出「【润色后简历正文】」「【改动说明】」这类标记，不要把标签写成加粗，不要在结尾拼接整份简历全文或追加「需要我…吗」这类收尾。'
+        '【展示铁律】不要输出「【润色后简历正文】」「【改动说明】」这类标记，不要把标签写成加粗，不要在结尾拼接整份简历全文或追加「需要我…吗」这类收尾。',
+        '【篇幅铁律】最多只列 6 处最值得改的地方，每块三行都尽量短，全文控制在 900 字以内。宁少勿多，输出过长会导致响应超时失败。'
       ],
       interview: [
         '',
@@ -1564,7 +1552,8 @@
       tips: [
         '',
         '【当前任务：求职提示】',
-        '讲清两类事。「投递简历注意事项」：投递前核对岗位匹配与联系方式、按岗位定制简历、文件命名与格式（优先 PDF/Word）、邮件与平台投递规范、投递记录与跟进、常见骗局识别（押金/培训贷/刷单/扣证件）。「选择实习单位注意事项」：岗位与专业相关性、能否真正学到东西、带教与工作内容、实习协议与权益（报酬/工时/保险）、时间安排是否与课程冲突、转正与背调要点、识别「打杂/销售冒充技术岗」。每条具体可执行，提醒以个人判断为主。'
+        '讲清两类事，每类 5-6 条短要点，每条一行、具体可执行。「投递简历注意事项」：投递前核对岗位匹配与联系方式、按岗位定制简历、文件命名与格式（优先 PDF/Word）、邮件与平台投递规范、投递记录与跟进、常见骗局识别（押金/培训贷/刷单/扣证件）。「选择实习单位注意事项」：岗位与专业相关性、能否真正学到东西、带教与工作内容、实习协议与权益（报酬/工时/保险）、时间安排是否与课程冲突、转正与背调要点、识别「打杂/销售冒充技术岗」。',
+        '【篇幅铁律】全文控制在 800 字以内，用短句和列表，不要长篇解释；输出过长会导致响应超时失败。'
       ]
     };
     var tail = [
@@ -1578,12 +1567,92 @@
     return common.concat(byMode[state.mode] || [], tail).join('\n');
   }
 
-  function callLLM(userText){
-    var msgs = state.history.slice(-14).map(function(m){return {role:m.role,content:m.content};});
-    if (userText){var last=msgs[msgs.length-1];if(!last||last.role!=='user'||last.content!==userText)msgs.push({role:'user',content:userText});}
-    return fetch(API_BASE+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:systemPrompt(),messages:msgs,config:state.useServerConfig?{}:state.cfg})})
+  // 后端单次请求上限约 8.5 秒（平台同步函数限制），长回答容易超时。
+  // 策略：①单次失败自动重试；②润色这类长回答改为「逐段处理」，每段都能在时限内返回。
+  var LLM_MAX_TRIES = 3;
+  function llmOnce(payload){
+    return fetch(API_BASE+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
       .then(function(r){return r.json().then(function(d){return {ok:r.ok,data:d};});})
       .then(function(res){if(!res.ok||!res.data||!res.data.content)throw new Error((res.data&&res.data.message)||'模型调用失败');return res.data.content;});
+  }
+  function llmRetry(system, messages){
+    var payload = {system:system,messages:messages,config:state.useServerConfig?{}:state.cfg};
+    var tries = 0;
+    function run(){
+      tries++;
+      return llmOnce(payload).catch(function(err){
+        var m = String((err && err.message) || '');
+        // 超时 / 空返回 / 网络抖动 都属于可重试
+        var retriable = /超时|TIMEOUT|为空|网络|Failed to fetch|NetworkError|502|503|504/i.test(m);
+        if (retriable && tries < LLM_MAX_TRIES){
+          typingNote('网络有点慢，正在自动重试（第 '+tries+' 次）…');
+          return new Promise(function(res){setTimeout(res, 400);}).then(run);
+        }
+        if (/超时|TIMEOUT/i.test(m)) throw new Error('模型连续 '+tries+' 次都没能在时限内返回。请稍等几秒再点一次；如果一直失败，可以把内容拆成更短的几段分别处理。');
+        throw err;
+      });
+    }
+    return run();
+  }
+
+  /* 把长文本切成「约 340 字一段」，优先在空行（板块边界）切开，其次按行切 */
+  function splitForPolish(text){
+    var raw = String(text||'').replace(/\r/g,'').trim();
+    if(!raw) return [];
+    var blocks = [];
+    raw.split(/\n{2,}/).forEach(function(p){
+      p = p.trim();
+      if(!p) return;
+      if(p.length <= 340){ blocks.push(p); return; }
+      var lines = p.split('\n'), cur = '';
+      lines.forEach(function(ln){
+        if(cur && (cur+'\n'+ln).length > 340){ blocks.push(cur); cur = ln; }
+        else { cur = cur ? cur+'\n'+ln : ln; }
+      });
+      if(cur) blocks.push(cur);
+    });
+    var chunks = [], buf = '';
+    blocks.forEach(function(b){
+      if(buf && (buf+'\n\n'+b).length > 340){ chunks.push(buf); buf = b; }
+      else { buf = buf ? buf+'\n\n'+b : b; }
+    });
+    if(buf) chunks.push(buf);
+    return chunks;
+  }
+  // 去掉每段回复开头自带的标题行，避免多段合并后一堆重复标题
+  function stripChunkHead(s){ return String(s||'').replace(/^\s*#{1,6}[^\n]*\n+/, '').replace(/^\s*【[^\n]{0,20}】\s*\n+/, ''); }
+
+  /* 逐段润色：每段单独请求，全部完成后再一次性显示，避免整份简历一次超时 */
+  function polishChunked(text){
+    var chunks = splitForPolish(text);
+    if (chunks.length < 2) return llmRetry(systemPrompt(), [{role:'user',content:text}]);
+    var out = [], i = 0;
+    function step(){
+      if (i >= chunks.length) {
+        return Promise.resolve('### 逐段润色对照（共 ' + chunks.length + ' 段）\n\n' + out.join('\n\n'));
+      }
+      var idx = i++;
+      typingNote('简历较长，正在逐段润色：第 ' + (idx+1) + ' / ' + chunks.length + ' 段…');
+      return llmRetry(systemPrompt(), [{
+        role:'user',
+        content:'请润色下面这段简历内容（这是整份简历的第 ' + (idx+1) + ' 段，只处理本段，不要提及其它段）：\n\n' + chunks[idx]
+      }]).then(function(r){
+        if (idx === 0) out.push(r);
+        else out.push(stripChunkHead(r));
+        return step();
+      });
+    }
+    return step();
+  }
+
+  function callLLM(userText){
+    // 润色：内容较长时自动逐段处理（整份简历一次请求必然超时）
+    if (state.mode === 'polish' && userText && String(userText).length > 420) {
+      return polishChunked(userText);
+    }
+    var msgs = state.history.slice(-14).map(function(m){return {role:m.role,content:m.content};});
+    if (userText){var last=msgs[msgs.length-1];if(!last||last.role!=='user'||last.content!==userText)msgs.push({role:'user',content:userText});}
+    return llmRetry(systemPrompt(), msgs);
   }
 
   /* ---------- 本地规则引擎 ---------- */
@@ -1916,14 +1985,14 @@
       var rawBase64=arrayBufferToBase64(buf);
       var parsePromise;
       if(ext==='pdf'){
-        if(!window.pdfjsLib)throw new Error('PDF 解析库未加载，请检查网络');
-        window.pdfjsLib.GlobalWorkerOptions.workerSrc='/vendor/pdf.worker.min.js';
+        if(!window.pdfjsLib)throw new Error('PDF 解析库未加载，请刷新页面重试');
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc='vendor/pdf.worker.min.js';
         parsePromise=window.pdfjsLib.getDocument({data:new Uint8Array(buf)}).promise.then(function(pdf){
           var jobs=[];for(var i=1;i<=pdf.numPages;i++)jobs.push(pdf.getPage(i).then(function(page){return page.getTextContent().then(function(tc){return joinPdfItems(tc.items);});}));
           return Promise.all(jobs).then(function(pages){return pages.join('\n');});
         });
       }else if(ext==='docx'||ext==='doc'){
-        if(!window.mammoth)throw new Error('Word 解析库未加载，请检查网络');
+        if(!window.mammoth)throw new Error('Word 解析库未加载，请刷新页面重试');
         parsePromise=window.mammoth.extractRawText({arrayBuffer:buf}).then(function(res){return res.value||'';});
       }else{
         throw new Error('仅支持 PDF / DOCX 文件');
@@ -2105,11 +2174,38 @@
       '</div>';
     }).join('');
   }
+  /* 在线版是静态托管，服务器文件系统只读（写文件夹会报 ENOENT），
+     所以建议一律先存浏览器本地，能连上后端时再同步到公共建议墙。 */
+  var FB_LOCAL_KEY = 'aiJobAssistantFeedbackLocal';
+  function localFeedback(){
+    try{var a=JSON.parse(localStorage.getItem(FB_LOCAL_KEY)||'[]');return Array.isArray(a)?a:[];}catch(e){return [];}
+  }
+  function saveLocalFeedback(it){
+    try{
+      var a=localFeedback();
+      a.push(it);
+      if(a.length>300)a=a.slice(-300);
+      localStorage.setItem(FB_LOCAL_KEY,JSON.stringify(a));
+    }catch(e){}
+  }
   function loadFeedback(){
-    if(typeof fetch!=='function'){renderWall([]);return;}
+    var local=localFeedback();
+    function merge(server){
+      var seen={},all=[];
+      (server||[]).concat(local).forEach(function(it){
+        if(!it||!it.content)return;
+        var k=String(it.time||'')+'|'+String(it.content||'');
+        if(seen[k])return;
+        seen[k]=1;all.push(it);
+      });
+      all.sort(function(a,b){return String(a.time||'').localeCompare(String(b.time||''));});
+      renderWall(all.reverse());
+      if($('statFeedback'))$('statFeedback').textContent=Math.max(all.length,local.length);
+    }
+    if(typeof fetch!=='function'){merge([]);return;}
     fetch(API_BASE+'/api/feedback').then(function(r){return r.json();}).then(function(d){
-      renderWall(d&&d.ok&&Array.isArray(d.items)?d.items:[]);
-    }).catch(function(){renderWall([]);});
+      merge(d&&d.ok&&Array.isArray(d.items)?d.items:[]);
+    }).catch(function(){merge([]);});
   }
   function loadStats(){
     if(typeof fetch!=='function')return;
@@ -2117,7 +2213,8 @@
       if(d&&d.ok){
         $('statVisitors').textContent=d.visitors||0;
         $('statConv').textContent=d.conversations||0;
-        $('statFeedback').textContent=d.feedback||0;
+        // 建议数取「服务端」与「本机浏览器」的较大值，避免在线版显示成 0 条
+        $('statFeedback').textContent=Math.max(Number(d.feedback||0),localFeedback().length);
       }
     }).catch(function(){});
   }
@@ -2135,25 +2232,52 @@
     var user=$('fbUser').value.trim()||'匿名用户';
     var content=$('fbContent').value.trim();
     if(!content){fbSetMsg('请先写下你的建议内容。','err');return;}
-    if(typeof fetch!=='function'){fbSetMsg('当前环境不支持保存，请通过本地服务访问。','err');return;}
     var btn=this;btn.disabled=true;
+    try{localStorage.setItem('aiJobAssistantUser',user);}catch(e){}
+    // 先存本机，保证「一定不丢」；再尝试同步到公共服务端
+    var item={id:Date.now()+'-'+Math.random().toString(36).slice(2,8),user:user,content:content,time:new Date().toISOString()};
+    saveLocalFeedback(item);
+    $('fbContent').value='';
+    function done(synced){
+      btn.disabled=false;
+      fbSetMsg(synced?'提交成功，谢谢你的建议！':'已保存到本机浏览器 ✅ 在线版没有服务器写入权限，所以暂时只能存在你这台电脑上（建议墙里已经能看到）。',synced?'ok':'ok');
+      loadFeedback();
+      loadStats();
+    }
+    if(typeof fetch!=='function'){done(false);return;}
     fbSetMsg('正在提交…');
     fetch(API_BASE+'/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({user:user,content:content})
+      body:JSON.stringify({user:user,content:content,id:item.id,time:item.time})
     }).then(function(r){return r.json();}).then(function(d){
-      btn.disabled=false;
-      if(d&&d.ok){
-        try{localStorage.setItem('aiJobAssistantUser',user);}catch(e){}
-        $('fbContent').value='';
-        fbSetMsg('提交成功，谢谢你的建议！','ok');
-        loadFeedback();
-      }else{
-        fbSetMsg('提交失败：'+((d&&d.error)||'未知错误'),'err');
-      }
-    }).catch(function(e){
-      btn.disabled=false;
-      fbSetMsg('提交失败：'+(e&&e.message?e.message:'网络错误'),'err');
+      done(!!(d&&d.ok));
+    }).catch(function(){done(false);});
+  });
+
+  /* ---------- 管理员：把本机浏览器保存的记录导出为 .jsonl，可直接放进 对话记录与建议/对话记录 ---------- */
+  $('adminExportBtn').addEventListener('click',function(){
+    var all=localRecords();
+    var msg=$('adminMsg');
+    if(!all.length){if(msg){msg.textContent='本机暂无记录：先正常使用几次对话，再来导出。';msg.className='admin-msg err';}return;}
+    var byDay={};
+    all.forEach(function(r){
+      var d=String(r.time||'').slice(0,10)||'unknown';
+      (byDay[d]=byDay[d]||[]).push(JSON.stringify(r));
     });
+    var text='',days=Object.keys(byDay).sort();
+    days.forEach(function(d){
+      if(days.length>1)text+='# '+d+'\n';
+      text+=byDay[d].join('\n')+'\n';
+    });
+    var blob=new Blob([text],{type:'application/x-ndjson;charset=utf-8'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    a.href=url;a.download='对话记录-'+days[days.length-1]+'.jsonl';
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    setTimeout(function(){URL.revokeObjectURL(url);},1500);
+    if(msg){
+      msg.textContent='已导出 '+all.length+' 条记录。把下载的文件放进「对话记录与建议/对话记录」文件夹即可。';
+      msg.className='admin-msg ok';
+    }
   });
 
   /* ---------- 管理员：口令验证后查看完整记录 ---------- */
@@ -2167,8 +2291,18 @@
       .then(function(r){return r.json().then(function(d){return {status:r.status,data:d};});})
       .then(function(res){
         if(!res.data||!res.data.ok){msg.textContent='口令不正确，无法查看记录。';msg.className='admin-msg err';list.classList.remove('show');return;}
-        var items=res.data.items||[];
-        msg.textContent='验证成功，共 '+res.data.count+' 条记录（显示最近 '+items.length+' 条）。';
+        var items=(res.data.items||[]).slice();
+        var local=localRecords();
+        // 合并本机浏览器记录（在线版写不进服务器文件夹，记录只存在本机）
+        var seen={};
+        items.forEach(function(it){seen[String(it.time||'')+'|'+String(it.content||'').slice(0,60)]=1;});
+        local.forEach(function(it){
+          var k=String(it.time||'')+'|'+String(it.content||'').slice(0,60);
+          if(!seen[k]){seen[k]=1;items.push(it);}
+        });
+        items.sort(function(a,b){return String(a.time||'').localeCompare(String(b.time||''));});
+        items=items.slice(-100).reverse();
+        msg.textContent='验证成功：服务端 '+((res.data.count)||0)+' 条 · 本机 '+local.length+' 条，共显示 '+items.length+' 条（点右侧「导出本机记录」可存成文件）。';
         msg.className='admin-msg ok';
         if(!items.length){list.innerHTML='<div class="wall-empty">暂无记录</div>';}
         else{
