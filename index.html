@@ -1,0 +1,2212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 求职小助手 · 大专 AI/计算机类求职辅助</title>
+<style>
+  :root{
+    --bg:#E8F2FE;
+    --card:#FFFFFF;
+    --ink:#0F2748;
+    --muted:#5B7599;
+    --faint:#8AA4C2;
+    --brand:#2B7FFF;
+    --brand-dark:#1257C4;
+    --brand2:#12A9E8;
+    --grad:linear-gradient(135deg,#2B7FFF 0%,#12A9E8 100%);
+    --grad-soft:linear-gradient(135deg,#EAF4FF 0%,#EAF7FF 100%);
+    --brand-soft:#EAF4FF;
+    --ok:#0B8A63;
+    --line:#DBE8F8;
+    --soft:#F4F9FF;
+    --blue-50:#F2F8FF;
+    --blue-100:#E3F0FF;
+    --blue-200:#CBE3FF;
+    --blue-300:#A9CDFF;
+    --blue-ink:#0B3A72;
+    --grid:rgba(43,127,255,.055);
+    --shadow:0 1px 2px rgba(16,24,40,.04),0 8px 24px rgba(30,60,110,.07),0 24px 60px rgba(30,60,110,.05);
+    --shadow-lg:0 18px 50px rgba(20,60,120,.13),0 2px 8px rgba(20,60,120,.06);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    /* 浅蓝「图纸」底：柔和蓝光 + 极淡网格线 */
+    background:
+      radial-gradient(1150px 580px at 10% -14%,rgba(43,127,255,.16),transparent 60%),
+      radial-gradient(900px 520px at 104% -6%,rgba(18,169,232,.14),transparent 56%),
+      radial-gradient(700px 500px at 50% 118%,rgba(91,193,255,.12),transparent 62%),
+      linear-gradient(rgba(43,127,255,.05) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(43,127,255,.05) 1px,transparent 1px),
+      var(--bg);
+    background-size:auto,auto,auto,30px 30px,30px 30px,auto;
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Segoe UI","Helvetica Neue",Arial,sans-serif;
+    font-size:14px;
+    line-height:1.7;
+    display:flex;flex-direction:column;
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ===== 顶栏（融入米灰背景，无突兀色条） ===== */
+  .topbar{
+    flex:0 0 auto;height:72px;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 30px;
+  }
+  .brand{display:flex;align-items:center;gap:13px}
+  .logo{
+    width:42px;height:42px;border-radius:13px;
+    background:var(--grad);color:#fff;font-weight:800;font-size:14px;letter-spacing:.5px;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 6px 18px rgba(43,127,255,.32),inset 0 1px 0 rgba(255,255,255,.35);
+    position:relative;
+  }
+  .logo::after{
+    content:"";position:absolute;inset:0;border-radius:13px;
+    background:linear-gradient(160deg,rgba(255,255,255,.28),transparent 45%);pointer-events:none;
+  }
+  .brand h1{margin:0;font-size:17px;font-weight:750;line-height:1.3;letter-spacing:-.3px}
+  .brand p{margin:0;font-size:11.5px;color:var(--muted);letter-spacing:.01em}
+  .top-actions{display:flex;align-items:center;gap:10px}
+  .icon-btn{
+    width:36px;height:36px;border-radius:11px;border:1px solid var(--line);
+    background:rgba(255,255,255,.85);color:var(--muted);font-size:16px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;transition:.18s;
+    box-shadow:0 1px 3px rgba(30,41,80,.05);
+  }
+  .icon-btn:hover{color:var(--brand);border-color:#A9CDFF;transform:translateY(-1px);box-shadow:0 4px 12px rgba(43,127,255,.14)}
+  /* 引擎徽章：按要求隐藏 */
+  #engineBadge{display:none}
+
+  /* ===== 工作台 ===== */
+  .workspace{flex:1 1 auto;display:flex;min-height:0;padding:0 20px 20px}
+
+  /* 左侧导航：玻璃卡片 + 图标 + 精致选中态 */
+  .sidebar{
+    width:222px;flex:0 0 222px;
+    padding:16px 12px 14px;
+    display:flex;flex-direction:column;
+    overflow-y:auto;
+    background:rgba(255,255,255,.72);
+    border:1px solid rgba(255,255,255,.85);
+    border-radius:18px;
+    box-shadow:var(--shadow);
+    backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  }
+  .side-label{
+    font-size:10.5px;font-weight:750;color:var(--faint);
+    letter-spacing:.14em;padding:4px 12px 8px;text-transform:uppercase;
+  }
+  .nav-item{
+    position:relative;display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+    border:none;background:transparent;
+    padding:10px 12px;margin:2px 0;
+    font-family:inherit;font-size:13px;line-height:1.5;color:#57779E;
+    border-radius:11px;cursor:pointer;transition:.18s;
+  }
+  .nav-item:hover{color:var(--ink);background:rgba(234,244,255,.7);transform:translateX(2px)}
+  .nav-item.active{
+    font-weight:650;color:var(--brand-dark);
+    background:var(--grad-soft);
+    box-shadow:inset 0 0 0 1px rgba(43,127,255,.14);
+  }
+  .nav-item.active::before{
+    content:"";position:absolute;left:-12px;top:50%;transform:translateY(-50%);
+    width:3px;height:22px;border-radius:0 3px 3px 0;background:var(--grad);
+  }
+  .side-divider{height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent);margin:16px 10px 8px}
+  .pos-chip{
+    position:relative;display:flex;align-items:center;gap:9px;width:100%;text-align:left;
+    border:none;background:transparent;
+    padding:8px 12px;margin:1px 0;
+    font-family:inherit;font-size:12.5px;color:var(--muted);
+    border-radius:10px;cursor:pointer;transition:.18s;
+  }
+  .pos-chip::before{
+    content:"";width:6px;height:6px;border-radius:50%;background:#C9D0E0;flex:0 0 6px;transition:.18s;
+  }
+  .pos-chip:hover{color:var(--ink);background:rgba(234,244,255,.7)}
+  .pos-chip.active{color:var(--brand-dark);font-weight:600;background:rgba(234,244,255,.85)}
+  .pos-chip.active::before{background:var(--grad);box-shadow:0 0 0 3px rgba(43,127,255,.14)}
+  .nav-ico{font-size:14px;line-height:1;width:18px;text-align:center;filter:saturate(.9)}
+  .custom-pos{padding:12px 10px 0}
+  .custom-pos label{display:block;font-size:10.5px;font-weight:700;color:var(--faint);letter-spacing:.1em;margin:0 2px 8px;text-transform:uppercase}
+  .custom-pos-row{display:flex;gap:6px}
+  .custom-pos input{
+    min-width:0;flex:1 1 auto;border:1px solid var(--line);border-radius:9px;
+    padding:8px 10px;font-family:inherit;font-size:12px;color:var(--ink);
+    outline:none;background:#fff;transition:.18s;
+  }
+  .custom-pos input:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(43,127,255,.12)}
+  .custom-pos button{
+    flex:0 0 auto;border:none;border-radius:9px;background:var(--grad);color:#fff;
+    padding:0 12px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;
+    box-shadow:0 3px 10px rgba(43,127,255,.24);transition:.18s;
+  }
+  .custom-pos button:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(43,127,255,.32)}
+  .custom-pos-hint{font-size:10px;color:var(--faint);line-height:1.5;margin-top:7px;padding:0 2px}
+  .side-foot{
+    margin-top:auto;font-size:10.5px;color:var(--faint);line-height:1.6;
+    padding:16px 12px 4px;
+    border-top:1px solid var(--line);margin-left:2px;margin-right:2px;
+  }
+
+  /* 主内容：带渐变顶边的精致白卡片 */
+  .main-card{
+    flex:1 1 auto;min-width:0;position:relative;
+    background:var(--card);
+    border-radius:20px;
+    box-shadow:var(--shadow-lg);
+    display:flex;flex-direction:column;
+    padding:20px 24px 18px;
+    overflow:hidden;
+    border:1px solid rgba(255,255,255,.9);
+  }
+  .main-card::before{
+    content:"";position:absolute;top:0;left:0;right:0;height:3px;
+    background:var(--grad);opacity:.9;
+  }
+  /* 伦理提示：柔和渐变信息卡 */
+  .ethics-card{
+    flex:0 0 auto;
+    display:flex;align-items:flex-start;gap:11px;
+    background:var(--grad-soft);border:1px solid #D6E7FF;
+    border-radius:12px;padding:11px 15px;margin-bottom:16px;
+    color:#4C6A8F;font-size:12px;line-height:1.65;
+  }
+  .ethics-card .info{
+    flex:0 0 19px;width:19px;height:19px;margin-top:1px;
+    border-radius:50%;background:var(--grad);color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:800;font-style:normal;
+    box-shadow:0 2px 6px rgba(43,127,255,.28);
+  }
+  .engine-status{
+    margin-left:auto;flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;
+    font-size:11.5px;color:#5E7899;background:#fff;border:1px solid var(--line);
+    border-radius:999px;padding:3px 10px;white-space:nowrap;
+  }
+  .engine-status .dot{width:7px;height:7px;border-radius:50%;background:#93A9C4;display:inline-block}
+  .engine-status.online{color:#047857;border-color:#A7F3D0;background:#ECFDF5}
+  .engine-status.online .dot{background:#10B981;box-shadow:0 0 0 3px rgba(16,185,129,.15)}
+  .engine-status.local{color:#B45309;border-color:#FDE68A;background:#FFFBEB}
+  .engine-status.local .dot{background:#F59E0B}
+
+  /* 会话标题栏 */
+  .chat-head{
+    flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;
+    padding:0 2px 13px;border-bottom:1px solid var(--line);margin-bottom:16px;
+  }
+  .chat-head b{font-size:15px;font-weight:750;letter-spacing:-.2px}
+  .chat-head span{font-size:12px;color:var(--muted);margin-left:11px}
+  .ghost-btn{
+    flex:0 0 auto;border:1px solid var(--line);background:#fff;border-radius:9px;
+    padding:6px 12px;font-family:inherit;font-size:11.5px;color:var(--muted);
+    cursor:pointer;transition:.18s;
+  }
+  .ghost-btn:hover{color:var(--brand);border-color:#A9CDFF;background:var(--brand-soft);transform:translateY(-1px)}
+
+  /* 消息流 */
+  .messages{
+    flex:1 1 auto;overflow-y:auto;
+    padding:2px 4px 10px;display:flex;flex-direction:column;gap:20px;
+  }
+  .msg{display:flex;gap:11px;align-items:flex-start;max-width:880px;width:100%;animation:msgIn .32s ease-out}
+  .msg.user{flex-direction:row-reverse;margin-left:auto}
+  @keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .avatar{
+    width:34px;height:34px;flex:0 0 34px;border-radius:11px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:800;color:#fff;letter-spacing:.3px;
+    background:var(--grad);
+    box-shadow:0 4px 12px rgba(43,127,255,.28),inset 0 1px 0 rgba(255,255,255,.3);
+  }
+  .msg.user .avatar{background:linear-gradient(135deg,#94A3B8,#64748B);box-shadow:0 4px 12px rgba(100,116,139,.24)}
+  .bubble{
+    padding:13px 17px;border-radius:15px;
+    font-size:13.5px;line-height:1.78;
+    white-space:normal;word-break:break-word;
+    max-width:calc(100% - 40px);
+  }
+  .bubble.ai{border-radius:5px 15px 15px 15px}
+  .bubble.user{border-radius:15px 5px 15px 15px}
+  /* Markdown 渲染样式 */
+  .bubble p{margin:0 0 9px}
+  .bubble p:last-child{margin-bottom:0}
+  .bubble ol,.bubble ul{margin:8px 0;padding-left:22px}
+  .bubble ol li,.bubble ul li{margin:5px 0;padding-left:2px}
+  .bubble ol li::marker{color:var(--brand);font-weight:600}
+  .bubble ul li::marker{color:var(--brand)}
+  .bubble h1,.bubble h2,.bubble h3{margin:12px 0 6px;font-size:14.5px;color:var(--brand-dark);font-weight:650}
+  .bubble h1:first-child,.bubble h2:first-child,.bubble h3:first-child{margin-top:0}
+  .bubble hr{border:none;border-top:1px solid #DCE7F4;margin:13px 0}
+  .bubble code{background:#EAF2FB;color:#B42318;padding:1px 5px;border-radius:4px;font-size:12.5px;font-family:ui-monospace,Menlo,Consolas,monospace}
+  .bubble pre{background:#EFF6FD;border:1px solid var(--line);border-radius:8px;padding:10px 12px;overflow-x:auto;margin:10px 0}
+  .bubble pre code{background:transparent;color:var(--ink);padding:0}
+  .bubble strong{font-weight:700;color:var(--brand-dark)}
+  .bubble.ai{background:#F7FBFF;border:1px solid var(--line);color:#2B4A6E;box-shadow:0 2px 10px rgba(30,41,80,.05)}
+  .bubble.user{background:var(--grad);color:#fff;box-shadow:0 6px 18px rgba(43,127,255,.24)}
+  .bubble strong{font-weight:700;color:var(--brand-dark)}
+  .msg.user .bubble strong{color:#fff}
+  .bubble h3{margin:0 0 6px;font-size:14px;color:var(--brand-dark);font-weight:650}
+  .typing .bubble{color:var(--muted)}
+  .dots{display:inline-flex;gap:4px;align-items:center;height:18px}
+  .dots i{width:5px;height:5px;border-radius:50%;background:#a9b4c6;animation:blink 1.2s infinite}
+  .dots i:nth-child(2){animation-delay:.2s}.dots i:nth-child(3){animation-delay:.4s}
+  @keyframes blink{0%,60%,100%{opacity:.25}30%{opacity:1}}
+
+  /* AI 回复底部：一键润色按钮 */
+  .flow-action{
+    display:inline-flex;align-items:center;gap:7px;
+    margin-top:14px;padding:8px 15px;
+    border:1px solid #BBD8FF;border-radius:10px;
+    background:var(--grad-soft);color:var(--brand-dark);
+    font-family:inherit;font-size:12.5px;font-weight:650;cursor:pointer;
+    transition:.18s;white-space:normal;
+  }
+  .flow-action:hover{background:var(--grad);color:#fff;border-color:transparent;transform:translateY(-2px);box-shadow:0 6px 16px rgba(43,127,255,.28)}
+  .flow-action .arrow{font-size:14px;line-height:1}
+
+  /* 悬浮输入区 */
+  .composer{flex:0 0 auto;padding-top:12px}
+  .composer-box{
+    border:1px solid var(--line);border-radius:17px;background:rgba(255,255,255,.95);
+    box-shadow:0 8px 30px rgba(30,41,80,.08),0 2px 6px rgba(30,41,80,.04);
+    padding:14px 16px 12px;transition:.2s;
+    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  }
+  .composer-box:focus-within{
+    border-color:#A9CDFF;
+    box-shadow:0 10px 34px rgba(43,127,255,.13),0 0 0 3px rgba(43,127,255,.07);
+  }
+  .upload-row{display:flex;align-items:center;gap:10px;padding-bottom:10px;flex-wrap:wrap}
+  .upload-btn{
+    display:inline-flex;align-items:center;gap:6px;cursor:pointer;
+    border:1px dashed #A9CDFF;border-radius:9px;
+    padding:6px 11px;font-size:12px;font-weight:600;color:var(--brand-dark);
+    background:var(--brand-soft);transition:.18s;
+  }
+  .upload-btn:hover{border-color:var(--brand);border-style:solid;background:#D6E7FF;transform:translateY(-1px)}
+  #resumeFile{display:none}
+  .upload-status{font-size:11.5px;color:var(--faint)}
+  .upload-status.warn{color:#B45309}
+  .upload-status.good{color:var(--ok)}
+  /* 已上传简历的文件卡片：浅灰圆角卡片 + 三个快捷按钮（文字仅在内部保留，不铺进输入框） */
+  .file-chip{
+    display:none;margin-bottom:10px;max-width:600px;
+  }
+  .file-chip.show{display:block}
+  .file-card-head{
+    display:flex;align-items:center;gap:11px;
+    background:var(--grad-soft);border:1px solid #D6E7FF;border-radius:13px;
+    padding:12px 14px;
+  }
+  .file-ico{
+    flex:0 0 34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:800;color:#fff;letter-spacing:.3px;
+    box-shadow:0 3px 8px rgba(30,41,80,.15);
+  }
+  .file-ico.pdf{background:linear-gradient(135deg,#F05252,#DC2626)}
+  .file-ico.word{background:var(--grad)}
+  .file-meta{min-width:0;flex:1}
+  .file-name{font-size:13px;font-weight:600;color:#17324F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .file-sub{font-size:11.5px;color:#93A9C4;margin-top:1px}
+  .file-del{
+    flex:0 0 auto;border:none;background:transparent;color:#93A9C4;
+    font-size:17px;line-height:1;cursor:pointer;padding:2px 4px;border-radius:6px;
+  }
+  .file-del:hover{background:#DCE7F4;color:#EF4444}
+  .file-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
+  .file-act{
+    border:1px solid var(--line);background:#fff;color:#57779E;border-radius:9px;
+    padding:7px 12px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;transition:.18s;
+    display:inline-flex;align-items:center;gap:6px;
+    box-shadow:0 1px 2px rgba(30,41,80,.04);
+  }
+  .file-act:hover{background:var(--brand-soft);color:var(--brand-dark);border-color:#A9CDFF;transform:translateY(-1px)}
+  .file-act .arrow{color:#93A9C4;font-size:13px;line-height:1}
+  /* 对话气泡里的附件卡片 */
+  .bubble .msg-file{
+    display:inline-flex;align-items:center;gap:9px;border:1px solid #DBEAFE;
+    background:#fff;border-radius:10px;padding:8px 12px;margin-bottom:8px;max-width:100%;
+  }
+  .bubble.user .msg-file{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.35)}
+  .bubble.user .msg-file .file-name,.bubble.user .msg-file .file-sub{color:#fff}
+  /* 下载按钮 */
+  .flow-action.download{background:#0B7A5B;border-color:#0B7A5B;color:#fff}
+  .flow-action.download:hover{background:#096249;border-color:#096249;color:#fff}
+  #input{
+    display:block;width:100%;border:none;outline:none;resize:none;
+    min-height:52px;max-height:160px;
+    font-family:inherit;font-size:13.5px;line-height:1.7;color:var(--ink);
+    background:transparent;padding:0 0 6px;
+  }
+  #input::placeholder{color:#A8BCD2}
+  .composer-actions{
+    display:flex;align-items:center;justify-content:flex-end;gap:8px;
+    padding-top:8px;border-top:1px solid #EDF4FC;
+  }
+  .quick-btn{
+    display:inline-flex;align-items:center;gap:6px;
+    border:none;background:var(--grad);color:#fff;
+    border-radius:10px;padding:9px 18px;
+    font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:.18s;
+    box-shadow:0 4px 14px rgba(43,127,255,.32),inset 0 1px 0 rgba(255,255,255,.25);
+    animation:quickPulse 2.4s ease-in-out infinite;
+  }
+  .quick-btn::before{content:'\25B6';font-size:11px;opacity:.95}
+  .quick-btn:hover{transform:translateY(-1px);box-shadow:0 7px 20px rgba(43,127,255,.42)}
+  @keyframes quickPulse{
+    0%,100%{box-shadow:0 4px 14px rgba(43,127,255,.30),0 0 0 0 rgba(43,127,255,.38)}
+    50%{box-shadow:0 4px 14px rgba(43,127,255,.30),0 0 0 7px rgba(43,127,255,0)}
+  }
+  .send-btn{
+    border:none;border-radius:10px;background:var(--grad);color:#fff;
+    padding:9px 22px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:.18s;
+    box-shadow:0 4px 14px rgba(43,127,255,.28),inset 0 1px 0 rgba(255,255,255,.25);
+  }
+  .send-btn:hover{transform:translateY(-1px);box-shadow:0 7px 20px rgba(43,127,255,.36)}
+  .send-btn:disabled{background:#C7CEDA;box-shadow:none;cursor:not-allowed;transform:none}
+  .hint{font-size:11px;color:var(--faint);padding:8px 2px 0}
+
+  /* 设置弹窗 */
+  .mask{
+    position:fixed;inset:0;background:rgba(15,20,45,.5);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);z-index:60;
+    display:none;align-items:center;justify-content:center;padding:20px;
+  }
+  .mask.show{display:flex;animation:msgIn .2s ease-out}
+  .modal{
+    width:min(540px,100%);background:#fff;border-radius:20px;padding:28px;
+    box-shadow:0 30px 80px rgba(20,24,60,.3),0 0 0 1px rgba(255,255,255,.6);
+    position:relative;overflow:hidden;
+  }
+  .modal::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:var(--grad)}
+  .modal h2{margin:0 0 4px;font-size:18px;font-weight:650}
+  .modal .sub{margin:0 0 18px;color:var(--muted);font-size:12.5px}
+  .presets{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+  .preset{
+    border:1px solid var(--line);background:var(--soft);border-radius:8px;
+    padding:5px 10px;font-family:inherit;font-size:11.5px;color:#3D5C7C;cursor:pointer;
+  }
+  .preset:hover{border-color:var(--brand);color:var(--brand)}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:12.5px;font-weight:600;margin-bottom:6px;color:#274666}
+  .field input{
+    width:100%;border:1px solid var(--line);border-radius:9px;padding:9px 11px;
+    font-family:inherit;font-size:13px;outline:none;
+  }
+  .field input:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+  .tip{
+    background:var(--soft);border:1px solid var(--line);border-radius:9px;
+    padding:10px 12px;font-size:11.5px;color:var(--muted);line-height:1.7;margin:0 0 18px;
+  }
+  .modal-actions{display:flex;gap:9px;justify-content:flex-end;flex-wrap:wrap}
+  .btn{
+    border-radius:9px;padding:8px 15px;font-size:13px;cursor:pointer;
+    border:1px solid var(--line);background:#fff;color:#3D5C7C;font-family:inherit;
+  }
+  .btn:hover{background:var(--soft)}
+  .btn.primary{background:var(--grad);border-color:transparent;color:#fff;box-shadow:0 4px 12px rgba(43,127,255,.24)}
+  .btn.primary:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(43,127,255,.32)}
+
+  /* 建议反馈入口按钮 */
+  .fb-open-btn{
+    height:36px;border-radius:10px;border:1px solid var(--line);
+    background:rgba(255,255,255,.85);color:#57779E;font-family:inherit;font-size:12.5px;font-weight:600;
+    padding:0 15px;cursor:pointer;transition:.18s;white-space:nowrap;
+    box-shadow:0 1px 3px rgba(30,41,80,.05);
+  }
+  .fb-open-btn:hover{color:var(--brand);border-color:#A9CDFF;background:var(--brand-soft);transform:translateY(-1px)}
+
+  /* 建议墙 */
+  .fb-nickname-row{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .fb-nickname-row label{font-size:12.5px;font-weight:600;color:#274666;white-space:nowrap}
+  .fb-nickname-row input{
+    flex:1;border:1px solid var(--line);border-radius:9px;padding:8px 11px;
+    font-family:inherit;font-size:13px;outline:none;
+  }
+  .fb-nickname-row input:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+  .fb-textarea{
+    width:100%;min-height:96px;resize:vertical;
+    border:1px solid var(--line);border-radius:9px;padding:10px 11px;
+    font-family:inherit;font-size:13px;line-height:1.6;outline:none;
+  }
+  .fb-textarea:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+  .fb-msg{font-size:12px;margin:0 0 12px;min-height:16px}
+  .fb-msg.ok{color:var(--ok)} .fb-msg.err{color:#c0392b}
+  .wall-head{
+    display:flex;align-items:center;justify-content:space-between;
+    margin:20px 0 10px;padding-top:16px;border-top:1px solid var(--line);
+  }
+  .wall-head b{font-size:14px;font-weight:650}
+  .wall-head span{font-size:11.5px;color:var(--faint)}
+  .wall{max-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
+  .wall-empty{
+    text-align:center;color:var(--faint);font-size:12.5px;
+    padding:28px 10px;border:1px dashed var(--line);border-radius:10px;
+  }
+  .wall-item{border:1px solid var(--line);border-radius:11px;padding:12px 14px;background:#fff}
+  .wall-item-top{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+  .wall-avatar{
+    width:30px;height:30px;border-radius:10px;flex:0 0 30px;
+    background:var(--grad);color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:12px;font-weight:800;
+    box-shadow:0 3px 8px rgba(43,127,255,.22);
+  }
+  .wall-user{font-size:13px;font-weight:600;color:var(--ink)}
+  .wall-time{font-size:11px;color:var(--faint);margin-left:auto}
+  .wall-text{font-size:13px;line-height:1.7;color:#274666;white-space:pre-wrap;word-break:break-word}
+
+  /* 公开使用统计（所有人可见，仅数字） */
+  .stats-strip{
+    display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;
+    padding:14px;border-radius:13px;background:var(--grad-soft);border:1px solid #D6E7FF;
+  }
+  .stats-item{flex:1;min-width:90px;text-align:center}
+  .stats-num{display:block;font-size:22px;font-weight:800;line-height:1.3;background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .stats-label{display:block;font-size:11px;color:var(--muted);margin-top:2px}
+
+  /* 管理员记录查看区 */
+  .admin-box{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+  .admin-box h3{margin:0 0 4px;font-size:14px;font-weight:650}
+  .admin-box .admin-desc{margin:0 0 12px;font-size:11.5px;color:var(--muted);line-height:1.6}
+  .admin-row{display:flex;gap:8px;margin-bottom:10px}
+  .admin-row input{
+    flex:1;border:1px solid var(--line);border-radius:9px;padding:8px 11px;
+    font-family:inherit;font-size:13px;outline:none;
+  }
+  .admin-row input:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+  .admin-msg{font-size:11.5px;min-height:16px;margin:0 0 8px}
+  .admin-msg.err{color:#c0392b} .admin-msg.ok{color:var(--ok)}
+  .admin-list{max-height:200px;overflow-y:auto;display:none;flex-direction:column;gap:8px}
+  .admin-list.show{display:flex}
+  .admin-rec{border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-size:12px}
+  .admin-rec-head{display:flex;gap:8px;align-items:center;margin-bottom:4px;flex-wrap:wrap}
+  .admin-rec-role{font-weight:650;color:var(--brand)}
+  .admin-rec-meta{color:var(--faint);font-size:11px}
+  .admin-rec-body{color:#274666;line-height:1.6;white-space:pre-wrap;word-break:break-word;max-height:120px;overflow:hidden}
+
+  ::-webkit-scrollbar{width:9px;height:9px}
+  ::-webkit-scrollbar-thumb{background:#C6D9EE;border-radius:9px;border:2px solid transparent;background-clip:padding-box}
+  ::-webkit-scrollbar-thumb:hover{background:#AFC7E2;background-clip:padding-box}
+  ::-webkit-scrollbar-track{background:transparent}
+
+  /* ============================================================
+     视觉丰富化增强层（保持浅色专业风 + 高级感）
+     ============================================================ */
+  /* 背景漂浮光斑：缓慢流动，增加层次 */
+  body::before,body::after{
+    content:"";position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(10px);
+  }
+  body::before{
+    width:420px;height:420px;top:-120px;left:-90px;
+    background:radial-gradient(circle at 40% 40%,rgba(96,175,255,.20),transparent 70%);
+    animation:floatA 18s ease-in-out infinite alternate;
+  }
+  body::after{
+    width:380px;height:380px;bottom:-120px;right:-80px;
+    background:radial-gradient(circle at 50% 50%,rgba(56,189,248,.14),transparent 70%);
+    animation:floatB 22s ease-in-out infinite alternate;
+  }
+  @keyframes floatA{from{transform:translate(0,0) scale(1)}to{transform:translate(60px,50px) scale(1.12)}}
+  @keyframes floatB{from{transform:translate(0,0) scale(1)}to{transform:translate(-50px,-40px) scale(1.1)}}
+  .topbar,.workspace{position:relative;z-index:1}
+
+  /* 顶栏：logo 呼吸光环 + 品牌名渐变 */
+  .logo{animation:logoGlow 3.6s ease-in-out infinite}
+  @keyframes logoGlow{
+    0%,100%{box-shadow:0 6px 18px rgba(43,127,255,.32),inset 0 1px 0 rgba(255,255,255,.35),0 0 0 0 rgba(43,127,255,.28)}
+    50%{box-shadow:0 6px 22px rgba(43,127,255,.42),inset 0 1px 0 rgba(255,255,255,.35),0 0 0 8px rgba(43,127,255,0)}
+  }
+  .brand h1{
+    background:linear-gradient(100deg,#1763D6 0%,#2B7FFF 50%,#12A9E8 100%);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  }
+  .fb-open-btn{
+    border:1px solid #A9CDFF;border-radius:10px;background:linear-gradient(135deg,#EAF4FF,#EAF7FF);
+    color:var(--brand-dark);font-family:inherit;font-size:12px;font-weight:650;
+    padding:7px 13px;cursor:pointer;transition:.18s;box-shadow:0 2px 8px rgba(43,127,255,.10);
+  }
+  .fb-open-btn:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(43,127,255,.20)}
+
+  /* 侧栏功能图标：彩色圆角底块 + 悬停放大 */
+  .nav-item .nav-ico{
+    width:26px;height:26px;line-height:26px;border-radius:8px;font-size:13px;
+    background:rgba(234,244,255,.9);display:inline-flex;align-items:center;justify-content:center;
+    transition:.2s;box-shadow:inset 0 0 0 1px rgba(43,127,255,.08);
+  }
+  .nav-item:nth-of-type(1) .nav-ico{background:#DBEAFE}
+  .nav-item:nth-of-type(2) .nav-ico{background:#E0F2FE}
+  .nav-item:nth-of-type(3) .nav-ico{background:#DBEAFE}
+  .nav-item:nth-of-type(4) .nav-ico{background:#CFFAFE}
+  .nav-item:nth-of-type(5) .nav-ico{background:#E0F2FE}
+  .nav-item:hover .nav-ico{transform:scale(1.14) rotate(-6deg)}
+  .nav-item.active .nav-ico{box-shadow:inset 0 0 0 1px rgba(43,127,255,.25),0 2px 6px rgba(43,127,255,.15)}
+
+  /* 侧栏底部：五功能小卡 */
+  .side-stats{
+    display:grid;grid-template-columns:repeat(5,1fr);gap:5px;
+    margin:2px 8px 14px;padding:11px 8px;
+    background:linear-gradient(135deg,rgba(234,244,255,.85),rgba(232,246,255,.7));
+    border:1px solid #D6E7FF;border-radius:12px;
+  }
+  .side-stat{text-align:center}
+  .side-stat .n{display:block;font-size:16px;font-weight:800;line-height:1.1;background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .side-stat .t{display:block;font-size:9.5px;color:var(--muted);margin-top:3px;white-space:nowrap}
+  .side-foot{text-align:center;font-style:italic}
+
+  /* 会话标题：功能徽章 + 装饰线 */
+  .chat-head .mode-badge{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:30px;height:30px;border-radius:9px;margin-right:10px;vertical-align:middle;
+    background:var(--grad);color:#fff;font-size:15px;
+    box-shadow:0 4px 10px rgba(43,127,255,.28);flex:0 0 auto;float:left;
+  }
+  .chat-head>div:first-child{display:flex;align-items:center;flex-wrap:wrap}
+  .chat-head b{background:linear-gradient(100deg,#0B3A72,#1B6FE8);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+
+  /* AI 头像：柔和旋转光环 */
+  .msg:not(.user) .avatar{position:relative;box-shadow:0 4px 12px rgba(43,127,255,.28)}
+  .msg:not(.user) .avatar::after{
+    content:"";position:absolute;inset:-3px;border-radius:14px;
+    background:conic-gradient(from 0deg,transparent,#9CCBFF,transparent,#BAE6FD,transparent);
+    z-index:-1;animation:spin 6s linear infinite;opacity:.75;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* AI 气泡：左侧渐变装饰条 + 更柔和阴影 */
+  .bubble.ai{position:relative;box-shadow:0 3px 16px rgba(30,41,80,.06)}
+  .bubble.ai::before{
+    content:"";position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:0 3px 3px 0;
+    background:linear-gradient(180deg,#2B7FFF,#12A9E8,#38BDF8);opacity:.65;
+  }
+  .msg.user .bubble{background:linear-gradient(135deg,#2B7FFF,#12A9E8)}
+
+  /* 伦理卡：左侧渐变竖条 */
+  .ethics-card{position:relative;overflow:hidden}
+  .ethics-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--grad)}
+
+  /* 输入区：聚焦时顶部渐变微光 */
+  .composer-box{position:relative;overflow:hidden}
+  .composer-box::before{
+    content:"";position:absolute;top:0;left:0;right:0;height:2px;
+    background:linear-gradient(90deg,transparent,#2B7FFF,#12A9E8,transparent);
+    opacity:0;transition:.25s;
+  }
+  .composer-box:focus-within::before{opacity:.9}
+
+  /* ===== 首屏欢迎区：功能卡片 ===== */
+  .hero{
+    position:relative;margin:2px 0 16px;padding:20px 22px 18px;
+    border-radius:18px;overflow:hidden;flex:0 0 auto;
+    background:
+      radial-gradient(620px 220px at 12% -30%,rgba(43,127,255,.13),transparent 65%),
+      radial-gradient(520px 200px at 96% 125%,rgba(56,189,248,.10),transparent 60%),
+      linear-gradient(160deg,#FFFFFF 0%,#F8FCFF 58%,#EAF6FF 100%);
+    border:1px solid #D8E8FF;
+    box-shadow:0 10px 30px rgba(40,34,90,.07),0 1px 2px rgba(40,34,90,.04);
+    transition:opacity .25s ease,transform .25s ease,max-height .3s ease,margin .3s ease,padding .3s ease;
+  }
+  .hero.hide{
+    opacity:0;transform:translateY(-10px);max-height:0;
+    padding-top:0;padding-bottom:0;margin-bottom:0;border-width:0;
+    pointer-events:none;
+  }
+  .hero-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+  .hero-eyebrow{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:10.5px;font-weight:750;letter-spacing:.5px;color:var(--brand);
+    background:rgba(234,244,255,.92);border:1px solid #CBE0FF;
+    padding:3px 9px;border-radius:999px;margin-bottom:8px;
+  }
+  .hero-title{
+    margin:0 0 3px;font-size:19px;font-weight:800;letter-spacing:-.2px;line-height:1.35;
+    background:linear-gradient(100deg,#0B3A72,#1B6FE8 55%,#12A9E8);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  }
+  .hero-sub{margin:0;font-size:12px;color:var(--muted);line-height:1.6}
+  .hero-close{
+    flex:0 0 auto;border:none;background:rgba(234,244,255,.8);color:#8E98AE;
+    width:26px;height:26px;border-radius:8px;cursor:pointer;font-size:14px;line-height:1;
+    transition:.18s;font-family:inherit;
+  }
+  .hero-close:hover{background:#D6E7FF;color:var(--brand)}
+  .hero-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+  .hero-card{
+    position:relative;text-align:left;cursor:pointer;font-family:inherit;
+    border:1px solid #DDEAFA;border-radius:13px;background:#fff;
+    padding:12px 12px 11px;display:flex;flex-direction:column;
+    transition:transform .18s,box-shadow .18s,border-color .18s;
+    box-shadow:0 2px 6px rgba(30,41,80,.04);overflow:hidden;
+  }
+  .hero-card:hover{transform:translateY(-3px);border-color:#A9CDFF;box-shadow:0 12px 26px rgba(43,127,255,.16)}
+  .hero-card:active{transform:translateY(-1px)}
+  .hc-ico{
+    width:32px;height:32px;border-radius:9px;margin-bottom:7px;
+    display:inline-flex;align-items:center;justify-content:center;font-size:16px;
+    box-shadow:inset 0 0 0 1px rgba(43,127,255,.06);
+  }
+  .hc-title{font-size:13px;font-weight:750;color:var(--ink);line-height:1.4}
+  .hc-desc{font-size:11px;line-height:1.55;color:var(--muted);margin-top:2px;flex:1}
+  .hc-go{margin-top:7px;font-size:11px;font-weight:750;color:#98A2B8;transition:.18s}
+  .hero-card:hover .hc-go{color:var(--brand)}
+  .hero-card.primary{
+    background:linear-gradient(150deg,#2B7FFF 0%,#1B8FE0 55%,#12A9E8 100%);
+    border-color:transparent;box-shadow:0 10px 24px rgba(43,127,255,.30);
+  }
+  .hero-card.primary .hc-title{color:#fff}
+  .hero-card.primary .hc-desc{color:rgba(255,255,255,.84)}
+  .hero-card.primary .hc-go{color:rgba(255,255,255,.9)}
+  .hero-card.primary:hover{box-shadow:0 16px 34px rgba(43,127,255,.38)}
+  .hero-card.primary .hc-ico{background:rgba(255,255,255,.18)!important;box-shadow:none}
+  .hero-foot{
+    margin-top:12px;display:flex;align-items:center;gap:7px;
+    font-size:11px;color:var(--faint);line-height:1.5;
+  }
+  .hero-foot b{color:var(--brand);font-weight:750}
+
+  @media (max-width:820px){
+    .topbar{padding:0 14px;height:60px}
+    .brand p{display:none}
+    .brand h1{font-size:15px}
+    .logo{width:36px;height:36px;border-radius:11px}
+    .workspace{flex-direction:column;padding:0 10px 10px;gap:10px}
+    .sidebar{
+      width:100%;flex:0 0 auto;padding:10px 12px 12px;
+      display:flex;flex-direction:row;align-items:center;gap:6px;
+      overflow-x:auto;overflow-y:hidden;white-space:nowrap;
+    }
+    .sidebar .side-label,.sidebar .side-divider,.sidebar .custom-pos,.sidebar .side-foot{display:none}
+    .nav-item,.pos-chip{width:auto;flex:0 0 auto;margin:0;padding:8px 12px}
+    .nav-item.active::before{display:none}
+    .pos-chip::before{display:none}
+    .main-card{border-radius:16px;padding:16px 14px 14px}
+    .chat-head span{display:none}
+    .bubble{font-size:13px;padding:11px 13px}
+    .ethics-card{font-size:11px;padding:9px 11px}
+    .composer-box{padding:12px}
+    .hero{padding:15px 13px 13px;border-radius:15px}
+    .hero-title{font-size:16.5px}
+    .hero-sub{font-size:11.5px}
+    .hero-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+    .hc-desc{display:none}
+    .hero-foot{display:none}
+  }
+  /* ============================================================
+     浅蓝「图纸」设计层 —— 覆盖前序样式，统一视觉语言
+     ============================================================ */
+
+  /* 顶栏：更轻，品牌名蓝墨渐变 */
+  .topbar{height:66px;padding:0 26px}
+  .logo{
+    width:40px;height:40px;border-radius:12px;
+    background:linear-gradient(145deg,#2B7FFF,#12A9E8 65%,#38BDF8);
+    box-shadow:0 8px 18px rgba(43,127,255,.30),inset 0 1px 0 rgba(255,255,255,.4);
+    animation:none;
+  }
+  .brand h1{
+    font-size:16.5px;letter-spacing:-.2px;
+    background:linear-gradient(96deg,#0B3A72 0%,#1763D6 45%,#12A9E8 100%);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  }
+  .brand p{color:#7C99BC;font-size:11px}
+  .icon-btn,.fb-open-btn{
+    background:rgba(255,255,255,.9);border:1px solid #D6E7FF;color:#4C6A8F;
+    box-shadow:0 2px 8px rgba(43,127,255,.08);
+  }
+  .fb-open-btn{color:#1257C4;font-weight:650;background:#fff}
+  .icon-btn:hover,.fb-open-btn:hover{
+    color:#1257C4;border-color:#A9CDFF;background:#F2F8FF;
+    box-shadow:0 6px 16px rgba(43,127,255,.18);transform:translateY(-1px);
+  }
+
+  /* 工作台骨架 */
+  .workspace{padding:0 18px 18px;gap:0}
+
+  /* 侧栏：白卡 + 蓝色分隔；选中项为蓝实心胶囊（差异化） */
+  .sidebar{
+    width:228px;flex:0 0 228px;
+    background:rgba(255,255,255,.86);
+    border:1px solid rgba(255,255,255,.9);
+    border-radius:20px;
+    box-shadow:0 1px 2px rgba(16,24,40,.03),0 10px 30px rgba(20,60,120,.07);
+    padding:16px 12px 14px;
+  }
+  .side-label{
+    font-size:10px;letter-spacing:.16em;color:#93A9C4;
+    padding:4px 12px 9px;
+  }
+  .nav-item{
+    gap:11px;padding:10px 12px;margin:3px 0;border-radius:12px;
+    font-size:13px;color:#57779E;
+  }
+  .nav-item:hover{background:#EDF6FF;color:#1257C4;transform:none}
+  .nav-item.active{
+    background:linear-gradient(135deg,#2B7FFF,#12A9E8);
+    color:#fff;font-weight:650;
+    box-shadow:0 8px 20px rgba(43,127,255,.28);
+    box-shadow:0 8px 20px rgba(43,127,255,.28),inset 0 1px 0 rgba(255,255,255,.25);
+  }
+  .nav-item.active::before{display:none}
+  .nav-item .nav-ico{
+    width:26px;height:26px;line-height:26px;border-radius:8px;font-size:13px;
+    background:#F1F7FF;box-shadow:inset 0 0 0 1px rgba(43,127,255,.10);
+  }
+  .nav-item:nth-of-type(1) .nav-ico,
+  .nav-item:nth-of-type(2) .nav-ico,
+  .nav-item:nth-of-type(3) .nav-ico,
+  .nav-item:nth-of-type(4) .nav-ico,
+  .nav-item:nth-of-type(5) .nav-ico{background:#F1F7FF}
+  .nav-item:hover .nav-ico{transform:none}
+  .nav-item.active .nav-ico{
+    background:rgba(255,255,255,.22);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.3);
+  }
+
+  /* 当前岗位高亮条 */
+  .pos-now{
+    display:flex;align-items:center;gap:10px;
+    margin:0 6px 10px;padding:10px 12px;border-radius:13px;
+    background:linear-gradient(135deg,#EAF4FF,#F3FAFF);
+    border:1px solid #D6E7FF;position:relative;overflow:hidden;
+  }
+  .pos-now::after{
+    content:"";position:absolute;right:-14px;top:-14px;width:52px;height:52px;border-radius:50%;
+    background:radial-gradient(circle,rgba(43,127,255,.18),transparent 70%);
+  }
+  .pos-now .pn-dot{
+    flex:0 0 8px;width:8px;height:8px;border-radius:50%;
+    background:linear-gradient(135deg,#2B7FFF,#12A9E8);
+    box-shadow:0 0 0 4px rgba(43,127,255,.14);
+  }
+  .pos-now em{display:block;font-style:normal;font-size:9.5px;letter-spacing:.12em;color:#8AA4C2}
+  .pos-now b{display:block;font-size:12.5px;color:#1257C4;font-weight:750;line-height:1.4;word-break:break-all}
+
+  .side-divider{background:linear-gradient(90deg,transparent,#D6E7FF,transparent);margin:14px 10px 8px}
+  .pos-chip{font-size:12.5px;color:#6A84A6;padding:8px 12px}
+  .pos-chip::before{background:#C4D7EC}
+  .pos-chip:hover{background:#EDF6FF;color:#1257C4}
+  .pos-chip.active{background:#EAF4FF;color:#1257C4;font-weight:650}
+  .pos-chip.active::before{background:linear-gradient(135deg,#2B7FFF,#12A9E8);box-shadow:0 0 0 3px rgba(43,127,255,.16)}
+  .custom-pos label{font-size:10px;letter-spacing:.14em;color:#93A9C4}
+  .custom-pos input{
+    background:#FBFDFF;border:1px solid #DBE8F8;border-radius:10px;font-size:12px;
+  }
+  .custom-pos input:focus{border-color:#2B7FFF;box-shadow:0 0 0 3px rgba(43,127,255,.12);background:#fff}
+  .custom-pos button{
+    background:linear-gradient(135deg,#2B7FFF,#12A9E8);
+    box-shadow:0 4px 12px rgba(43,127,255,.26);
+  }
+  .custom-pos-hint{color:#9BB1CB}
+  .side-stats{
+    background:linear-gradient(135deg,#EAF4FF,#F2FAFF);
+    border:1px solid #DCEBFF;border-radius:14px;
+    margin:4px 6px 12px;padding:12px 8px;
+  }
+  .side-stat .n{background:linear-gradient(135deg,#1763D6,#12A9E8);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .side-stat .t{color:#7C99BC}
+  .side-foot{color:#9BB1CB;border-top:1px solid #E7F1FD;text-align:center;font-style:normal;font-size:10px}
+
+  /* 主卡：白纸卡 + 蓝色顶线 + 左上角淡蓝光 */
+  .main-card{
+    border-radius:22px;padding:18px 22px 16px;
+    border:1px solid rgba(255,255,255,.95);
+    background:
+      radial-gradient(520px 240px at 0% 0%,rgba(43,127,255,.055),transparent 68%),
+      #fff;
+    box-shadow:0 1px 2px rgba(16,24,40,.03),0 16px 44px rgba(20,60,120,.10);
+  }
+  .main-card::before{height:3px;background:linear-gradient(90deg,#2B7FFF,#12A9E8 60%,#7DD3FC)}
+
+  /* 伦理信息条：浅蓝 + 蓝点 */
+  .ethics-card{
+    background:linear-gradient(120deg,#EFF7FF,#F6FBFF);
+    border:1px solid #DCEBFF;border-radius:12px;
+    color:#4C6A8F;padding:10px 14px;margin-bottom:12px;
+  }
+  .ethics-card::before{display:none}
+  .ethics-card .info{
+    background:linear-gradient(135deg,#2B7FFF,#12A9E8);
+    box-shadow:0 2px 6px rgba(43,127,255,.3);font-style:normal;
+  }
+  .engine-status{font-size:11px;border:1px solid #DCEBFF;background:#fff;color:#6A84A6}
+
+  /* 会话标题 */
+  .chat-head{padding:0 2px 11px;margin-bottom:13px;border-bottom:1px solid #E7F1FD}
+  .chat-head .mode-badge{
+    width:28px;height:28px;border-radius:9px;font-size:14px;margin-right:9px;
+    background:linear-gradient(135deg,#2B7FFF,#12A9E8);
+    box-shadow:0 5px 12px rgba(43,127,255,.26);
+  }
+  .chat-head b{
+    font-size:15.5px;
+    background:linear-gradient(96deg,#0B3A72,#1763D6);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  }
+  .chat-head span{font-size:11.5px;color:#7C99BC}
+  .ghost-btn{
+    border:1px solid #DCEBFF;background:#fff;color:#6A84A6;border-radius:10px;
+    padding:6px 12px;font-size:11.5px;
+  }
+  .ghost-btn:hover{color:#1257C4;border-color:#A9CDFF;background:#F2F8FF;transform:none}
+  .chat-head-right{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+  .pos-tag{
+    display:inline-flex;align-items:center;gap:5px;max-width:190px;
+    font-size:11px;font-weight:700;color:#1257C4;
+    background:#EFF7FF;border:1px solid #CBE3FF;border-radius:999px;
+    padding:4px 11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .pos-tag::before{content:'\25C6';font-size:8px;color:#2B7FFF}
+
+  /* 消息区：首屏引导已移入滚动流，滚一下即滑走，不再占用固定高度 */
+  .messages{min-height:88px;gap:14px;padding:2px 4px 8px}
+  .msg-list{display:flex;flex-direction:column;gap:18px}
+  .msg-list:empty{display:none}
+
+  /* AI 气泡：浅蓝纸片 + 蓝边（去掉竖条，改为角标语言） */
+  .bubble.ai{
+    background:#F7FBFF;border:1px solid #DFEDFD;color:#2B4A6E;
+    border-radius:6px 16px 16px 16px;
+    box-shadow:0 2px 10px rgba(20,60,120,.05);
+  }
+  .bubble.ai::before{display:none}
+  .bubble.user{
+    background:linear-gradient(135deg,#2B7FFF,#12A9E8);
+    border-radius:16px 6px 16px 16px;
+    box-shadow:0 8px 22px rgba(43,127,255,.26);
+  }
+  .bubble strong{color:#1257C4}
+  .bubble h1,.bubble h2,.bubble h3{color:#1257C4}
+  .msg:not(.user) .avatar{
+    background:linear-gradient(140deg,#2B7FFF,#12A9E8);
+    box-shadow:0 5px 14px rgba(43,127,255,.26);
+  }
+  .msg:not(.user) .avatar::after{display:none}
+  .msg.user .avatar{background:linear-gradient(135deg,#8FB4DC,#5E8CB8);box-shadow:0 4px 12px rgba(94,140,184,.24)}
+
+  /* 首屏引导：横版紧凑「起飞台」，随对话滚动滑走 */
+  .hero{
+    flex:0 0 auto;
+    min-height:0;
+    max-height:none;
+    overflow:hidden;
+    display:grid;grid-template-columns:minmax(140px,.9fr) minmax(0,1.6fr);
+    gap:16px 20px;align-items:center;
+    margin:0 0 4px;padding:16px 18px;
+    border-radius:16px;
+    background:
+      radial-gradient(420px 180px at 0% 0%,rgba(43,127,255,.10),transparent 70%),
+      linear-gradient(150deg,#F6FBFF 0%,#EFF8FF 60%,#EAF5FF 100%);
+    border:1px dashed #BCD9FA;
+    box-shadow:none;
+  }
+  .hero.hide{
+    max-height:0;padding-top:0;padding-bottom:0;margin-bottom:0;border-width:0;
+    opacity:0;transform:none;pointer-events:none;
+  }
+  .hero-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin:0}
+  .hero-head>div{min-width:0}
+  .hero-eyebrow{
+    font-size:10px;letter-spacing:.08em;color:#1257C4;font-weight:750;
+    background:#fff;border:1px solid #D6E7FF;border-radius:999px;padding:3px 9px;
+  }
+  .hero-title{
+    font-size:17px;line-height:1.35;margin:7px 0 4px;letter-spacing:-.2px;
+    background:linear-gradient(96deg,#0B3A72,#1B6FE8 70%,#12A9E8);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  }
+  .hero-sub{font-size:11.5px;color:#6A84A6;line-height:1.6;margin:0}
+  .hero-close{
+    width:24px;height:24px;border-radius:8px;background:#fff;border:1px solid #DCEBFF;
+    color:#8AA4C2;font-size:13px;
+  }
+  .hero-close:hover{background:#EAF4FF;color:#1257C4}
+  .hero-grid{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;
+    align-content:center;min-width:0;
+  }
+  .hero-card{
+    width:auto;min-width:0;padding:9px 10px;border-radius:12px;
+    border:1px solid #DCEBFF;background:#fff;
+    display:grid;grid-template-columns:26px 1fr;grid-template-rows:auto auto;
+    column-gap:8px;row-gap:1px;align-items:center;
+    box-shadow:0 2px 6px rgba(20,60,120,.04);
+  }
+  .hero-card:hover{border-color:#9CCBFF;box-shadow:0 10px 22px rgba(43,127,255,.16);transform:translateY(-2px)}
+  .hc-ico{
+    grid-row:1 / span 2;width:26px;height:26px;border-radius:8px;margin:0;
+    font-size:13px;background:#EFF7FF!important;box-shadow:inset 0 0 0 1px rgba(43,127,255,.1);
+  }
+  .hc-title{font-size:12.5px;font-weight:750;color:#123A63;line-height:1.4;grid-column:2}
+  .hc-desc{display:none}
+  .hc-go{
+    grid-column:2;margin:0;font-size:10.5px;font-weight:650;color:#9BB1CB;
+  }
+  .hero-card:hover .hc-go{color:#2B7FFF}
+  .hero-card.primary{
+    background:linear-gradient(140deg,#2B7FFF 0%,#1590E4 60%,#12A9E8 100%);
+    border-color:transparent;box-shadow:0 10px 24px rgba(43,127,255,.28);
+  }
+  .hero-card.primary .hc-title{color:#fff}
+  .hero-card.primary .hc-go{color:rgba(255,255,255,.85)}
+  .hero-card.primary .hc-ico{background:rgba(255,255,255,.2)!important;box-shadow:none}
+  .hero-card.primary:hover{box-shadow:0 16px 32px rgba(43,127,255,.34)}
+  .hero-foot{
+    grid-column:1 / -1;margin:0;padding-top:9px;border-top:1px dashed #D3E5FA;
+    font-size:10.5px;color:#93A9C4;
+  }
+  .hero-foot b{color:#1257C4}
+
+  /* 输入区：白底蓝边，发送键做蓝色胶囊 + 箭头 */
+  .composer{padding-top:10px}
+  .composer-box{
+    border:1px solid #DCEBFF;border-radius:16px;background:#fff;
+    box-shadow:0 6px 22px rgba(20,60,120,.07);
+  }
+  .composer-box:focus-within{
+    border-color:#9CCBFF;
+    box-shadow:0 8px 26px rgba(43,127,255,.14),0 0 0 3px rgba(43,127,255,.09);
+  }
+  .composer-box::before{
+    background:linear-gradient(90deg,transparent,#2B7FFF,#12A9E8,transparent);
+  }
+  .upload-btn{
+    border:1px dashed #A9CDFF;background:#F2F8FF;color:#1257C4;border-radius:10px;
+    font-size:11.5px;font-weight:650;
+  }
+  .upload-btn:hover{background:#E4F1FF;border-color:#2B7FFF;border-style:solid;transform:none}
+  .composer-actions{border-top:1px solid #EFF6FD;padding-top:9px}
+  .send-btn{
+    background:linear-gradient(135deg,#2B7FFF,#12A9E8);
+    border-radius:11px;padding:9px 20px;font-weight:700;
+    box-shadow:0 6px 16px rgba(43,127,255,.28),inset 0 1px 0 rgba(255,255,255,.25);
+    display:inline-flex;align-items:center;gap:6px;
+  }
+  .send-btn::after{content:'\2192';font-size:14px;line-height:1;opacity:.95}
+  .send-btn:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(43,127,255,.36)}
+  .send-btn:disabled{background:#C9D8E8;box-shadow:none}
+  .quick-btn{
+    background:linear-gradient(135deg,#2B7FFF,#12A9E8);
+    border-radius:11px;padding:9px 16px;font-size:12.5px;
+    box-shadow:0 4px 14px rgba(43,127,255,.28);
+    animation:quickPulse 2.6s ease-in-out infinite;
+  }
+  .quick-btn::before{content:'\25B8'}
+  .quick-btn:hover{box-shadow:0 8px 20px rgba(43,127,255,.38)}
+  @keyframes quickPulse{
+    0%,100%{box-shadow:0 4px 14px rgba(43,127,255,.26),0 0 0 0 rgba(43,127,255,.34)}
+    50%{box-shadow:0 4px 14px rgba(43,127,255,.26),0 0 0 7px rgba(43,127,255,0)}
+  }
+  .hint{color:#A2B7CE}
+
+  /* 文件卡片 / 弹窗统一成蓝调 */
+  .file-card-head{background:linear-gradient(135deg,#EAF4FF,#F5FBFF);border:1px solid #DCEBFF;border-radius:13px}
+  .file-ico.word{background:linear-gradient(135deg,#2B7FFF,#12A9E8)}
+  .file-act:hover{background:#EFF7FF;color:#1257C4;border-color:#A9CDFF}
+  .modal{border-radius:20px}
+  .modal::before{background:linear-gradient(90deg,#2B7FFF,#12A9E8 60%,#7DD3FC);height:3px}
+  .btn.primary{background:linear-gradient(135deg,#2B7FFF,#12A9E8);box-shadow:0 4px 12px rgba(43,127,255,.24)}
+  .stats-strip{background:linear-gradient(135deg,#EAF4FF,#F3FAFF);border:1px solid #DCEBFF}
+  .stats-num{background:linear-gradient(135deg,#1763D6,#12A9E8);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .wall-avatar{background:linear-gradient(135deg,#2B7FFF,#12A9E8);box-shadow:0 3px 8px rgba(43,127,255,.22)}
+
+  /* 背景光斑改成淡蓝 */
+  body::before{
+    width:460px;height:460px;top:-140px;left:-100px;
+    background:radial-gradient(circle at 42% 42%,rgba(120,190,255,.28),transparent 70%);
+  }
+  body::after{
+    width:420px;height:420px;bottom:-140px;right:-90px;
+    background:radial-gradient(circle at 50% 50%,rgba(120,220,255,.22),transparent 70%);
+  }
+
+  /* ===== 窄屏：横向导航 + 首屏纵向折叠，输入框恒定可见 ===== */
+  @media (max-width:820px){
+    .topbar{height:58px;padding:0 12px}
+    .workspace{padding:0 9px 9px}
+    .sidebar{padding:9px 10px;border-radius:15px;background:rgba(255,255,255,.9)}
+    .sidebar .pos-now,.sidebar .side-stats{display:none}
+    .nav-item.active{box-shadow:0 4px 12px rgba(43,127,255,.24)}
+    .main-card{padding:13px 12px 12px;border-radius:17px}
+    .hero{
+      grid-template-columns:1fr;gap:9px;padding:12px;
+    }
+    .hero-title{font-size:15.5px}
+    .hero-sub{display:none}
+    .hero-grid{grid-template-columns:repeat(2,1fr)}
+    .hero-card{width:auto}
+    .hero-foot{display:none}
+    .chat-head span{display:none}
+    .pos-tag{display:none}
+    .composer-box{padding:11px}
+    .send-btn{padding:9px 16px}
+  }
+</style>
+<!-- PDF / Word 简历解析（CDN，加载失败时仍可手动粘贴文本） -->
+<script src="/vendor/pdf.min.js"></script>
+<script src="/vendor/mammoth.browser.min.js"></script>
+</head>
+<body>
+
+<!-- 顶栏 -->
+<header class="topbar">
+  <div class="brand">
+    <div class="logo">AI</div>
+    <div>
+      <h1>AI 求职小助手</h1>
+      <p>大专层次·人工智能/计算机类求职辅助（支持全专业自定义）</p>
+    </div>
+  </div>
+  <div class="top-actions">
+    <span id="engineBadge">本地规则引擎</span>
+    <button class="fb-open-btn" id="fbOpenBtn" title="提建议、查看大家的建议">建议反馈</button>
+    <button class="icon-btn" id="settingsBtn" title="设置大模型接口">⚙</button>
+  </div>
+</header>
+
+<!-- 工作台 -->
+<div class="workspace">
+  <aside class="sidebar">
+    <div class="side-label">功能</div>
+    <button class="nav-item active" data-mode="diagnose"><span class="nav-ico">🩺</span>简历诊断</button>
+    <button class="nav-item" data-mode="polish"><span class="nav-ico">✨</span>简历润色</button>
+    <button class="nav-item" data-mode="interview"><span class="nav-ico">🎙️</span>AI 模拟面试</button>
+    <button class="nav-item" data-mode="bank"><span class="nav-ico">📚</span>面试题库生成</button>
+    <button class="nav-item" data-mode="tips"><span class="nav-ico">💡</span>求职提示</button>
+
+    <div class="side-divider"></div>
+    <div class="side-label">岗位方向</div>
+    <div class="pos-now">
+      <span class="pn-dot"></span>
+      <div style="min-width:0">
+        <em>当前岗位</em>
+        <b id="posNow">AI 数据标注</b>
+      </div>
+    </div>
+    <button class="pos-chip active" data-pos="AI数据标注">AI 数据标注</button>
+    <button class="pos-chip" data-pos="算法助理">算法助理</button>
+    <button class="pos-chip" data-pos="智能体运营">智能体运营</button>
+    <button class="pos-chip" data-pos="技术支持">技术支持</button>
+
+    <div class="custom-pos">
+      <label for="customPosInput" id="customPosLabel">自定义岗位</label>
+      <div class="custom-pos-row">
+        <input id="customPosInput" placeholder="如：游戏测试 / 会计助理" />
+        <button id="customPosBtn" title="设为当前岗位，诊断/润色/面试/题库/提示全部支持">应用岗位</button>
+      </div>
+      <div class="custom-pos-hint" id="customPosHint">未识别到岗位时可手动填写，所有功能都会围绕它展开</div>
+    </div>
+
+    <div class="side-stats">
+      <div class="side-stat"><span class="n">5</span><span class="t">大功能</span></div>
+      <div class="side-stat"><span class="n">∞</span><span class="t">次练习</span></div>
+      <div class="side-stat"><span class="n">24h</span><span class="t">在线</span></div>
+      <div class="side-stat"><span class="n">0</span><span class="t">费用</span></div>
+      <div class="side-stat"><span class="n">AI</span><span class="t">驱动</span></div>
+    </div>
+    <div class="side-foot">招聘方会核查简历真实性，请勿虚构项目、证书、技能或数据。</div>
+  </aside>
+
+  <section class="main-card">
+    <!-- 伦理提示小卡片 -->
+    <div class="ethics-card">
+      <i class="info">i</i>
+      <span>本智能体仅作求职辅助，简历与面试内容以个人思考为主，请勿直接复制AI生成内容投递简历。若所用平台看不到访问数据，须提前向任课教师报备，改用问卷星统计体验人数。</span>
+      <span class="engine-status" id="engineStatus"><i class="dot"></i><span id="engineStatusText">正在检测智能服务…</span></span>
+    </div>
+
+    <div class="chat-head">
+      <div><span class="mode-badge" id="modeBadge">🩺</span><b id="modeTitle">简历诊断</b><span id="modeDesc">引用原文逐条指出问题，给出可执行的修改建议</span></div>
+      <div class="chat-head-right">
+        <span class="pos-tag" id="posTag">AI 数据标注</span>
+        <button class="ghost-btn" id="resetBtn">清空当前对话</button>
+      </div>
+    </div>
+
+    <div class="messages" id="messages">
+    <div class="hero" id="heroPanel">
+      <div class="hero-head">
+        <div>
+          <span class="hero-eyebrow">✨ 五大功能 · 全专业岗位适配</span>
+          <h2 class="hero-title">今天想先练哪一项？</h2>
+          <p class="hero-sub">从简历打磨到模拟面试，点一张卡片直接开始；也可以随时从左侧切换。</p>
+        </div>
+        <button class="hero-close" id="heroClose" title="收起引导">×</button>
+      </div>
+      <div class="hero-grid">
+        <button class="hero-card" data-hero-mode="diagnose">
+          <span class="hc-ico" style="background:#DBEAFE">🩺</span>
+          <span class="hc-title">简历诊断</span>
+          <span class="hc-desc">逐条挑出问题，给出可执行的修改建议</span>
+          <span class="hc-go">开始诊断 →</span>
+        </button>
+        <button class="hero-card" data-hero-mode="polish">
+          <span class="hc-ico" style="background:#E0F2FE">✨</span>
+          <span class="hc-title">简历润色</span>
+          <span class="hc-desc">逐处对照，告诉你改了哪里、为什么改</span>
+          <span class="hc-go">开始润色 →</span>
+        </button>
+        <button class="hero-card primary" data-hero-mode="interview">
+          <span class="hc-ico">🎙️</span>
+          <span class="hc-title">AI 模拟面试</span>
+          <span class="hc-desc">一次一题，答完先肯定再建议，最后给思路</span>
+          <span class="hc-go">开始面试 →</span>
+        </button>
+        <button class="hero-card" data-hero-mode="bank">
+          <span class="hc-ico" style="background:#CFFAFE">📚</span>
+          <span class="hc-title">面试题库</span>
+          <span class="hc-desc">按岗位一次列出 5-8 题及答题思路</span>
+          <span class="hc-go">生成题库 →</span>
+        </button>
+        <button class="hero-card" data-hero-mode="tips">
+          <span class="hc-ico" style="background:#E0F2FE">💡</span>
+          <span class="hc-title">求职提示</span>
+          <span class="hc-desc">投递简历与挑选实习单位的注意事项</span>
+          <span class="hc-go">查看提示 →</span>
+        </button>
+      </div>
+      <div class="hero-foot">
+        <span>💡 所有建议以个人思考为主，请勿直接复制 AI 内容投递；拿不准就直接问，我会按当前岗位给具体建议。</span>
+      </div>
+    </div>
+      <div class="msg-list" id="msgList"></div>
+    </div>
+
+    <div class="composer">
+      <div class="composer-box">
+        <div class="upload-row" id="uploadRow">
+          <label class="upload-btn" for="resumeFile">📎 上传 Word 简历（.docx）</label>
+          <input type="file" id="resumeFile" accept=".docx,.pdf,.doc,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf,application/msword">
+          <span class="upload-status" id="uploadStatus">上传后自动解析，无需粘贴文字</span>
+        </div>
+        <div class="file-chip" id="fileChip">
+          <div class="file-card-head">
+            <div class="file-ico word" id="fileIco">W</div>
+            <div class="file-meta">
+              <div class="file-name" id="fileName">简历.docx</div>
+              <div class="file-sub" id="fileSub">Word · 71KB</div>
+            </div>
+            <button class="file-del" id="fileDel" title="移除附件">×</button>
+          </div>
+          <div class="file-actions" id="fileActions">
+            <button class="file-act" data-task="summary">详细总结文档内容 <span class="arrow">→</span></button>
+            <button class="file-act" data-task="ppt">生成 PPT <span class="arrow">→</span></button>
+          </div>
+        </div>
+        <textarea id="input" placeholder="发消息或按住空格说话…"></textarea>
+        <div class="composer-actions">
+          <button class="quick-btn" id="quickBtn" style="display:none"></button>
+          <button class="send-btn" id="sendBtn">发送</button>
+        </div>
+      </div>
+      <div class="hint" id="hintText">把简历原文粘贴到下方，按 Ctrl + Enter 也可发送</div>
+    </div>
+  </section>
+</div>
+
+<!-- 设置弹窗 -->
+<div class="mask" id="settingsMask">
+  <div class="modal">
+    <h2>接入大模型</h2>
+    <p class="sub">支持任意 OpenAI Chat Completions 兼容接口。不配置也可使用内置规则引擎。</p>
+    <div class="presets">
+      <button class="preset" data-preset="deepseek">DeepSeek</button>
+      <button class="preset" data-preset="qwen">通义千问（兼容模式）</button>
+      <button class="preset" data-preset="moonshot">Moonshot</button>
+      <button class="preset" data-preset="openai">OpenAI</button>
+    </div>
+    <div class="field"><label>接口地址 Base URL</label><input id="cfgBase" placeholder="https://api.deepseek.com/v1"></div>
+    <div class="field"><label>API Key</label><input id="cfgKey" type="password" placeholder="sk-..."></div>
+    <div class="field"><label>模型名</label><input id="cfgModel" placeholder="deepseek-chat"></div>
+    <p class="tip">密钥仅保存在本机浏览器或服务配置中，请求经本机服务转发给模型厂商。遇到「直接写简历 / 编实习经历」等请求会被拒绝。</p>
+    <div class="modal-actions">
+      <button class="btn" id="useLocalBtn">改用本地引擎</button>
+      <button class="btn" id="closeSettingsBtn">关闭</button>
+      <button class="btn primary" id="saveCfgBtn">保存并启用大模型</button>
+    </div>
+    <div class="admin-box">
+      <h3>管理员 · 查看使用记录</h3>
+      <p class="admin-desc">对话记录含简历原文，仅凭管理员口令可见；普通访客只能看到使用统计数字。口令在本机 config.json 的 adminToken 字段。</p>
+      <div class="admin-row">
+        <input type="password" id="adminToken" placeholder="输入管理员口令">
+        <button class="btn primary" id="adminViewBtn">查看</button>
+      </div>
+      <p class="admin-msg" id="adminMsg"></p>
+      <div class="admin-list" id="adminList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 建议反馈弹窗 -->
+<div class="mask" id="fbMask">
+  <div class="modal">
+    <h2>建议反馈</h2>
+    <p class="sub">你的建议会保存在「对话记录与建议/建议」文件夹并展示在建议墙；历史使用记录仅管理员可见。</p>
+    <div class="stats-strip" id="statsStrip">
+      <div class="stats-item"><span class="stats-num" id="statVisitors">—</span><span class="stats-label">位用户用过</span></div>
+      <div class="stats-item"><span class="stats-num" id="statConv">—</span><span class="stats-label">次提问</span></div>
+      <div class="stats-item"><span class="stats-num" id="statFeedback">—</span><span class="stats-label">条建议</span></div>
+    </div>
+    <div class="fb-nickname-row">
+      <label for="fbUser">你的称呼</label>
+      <input id="fbUser" placeholder="例如：小王 / 计科2301班" maxlength="60">
+    </div>
+    <textarea class="fb-textarea" id="fbContent" placeholder="说说你觉得哪里可以改进、想要什么新功能……"></textarea>
+    <p class="fb-msg" id="fbMsg"></p>
+    <div class="modal-actions">
+      <button class="btn" id="fbCloseBtn">关闭</button>
+      <button class="btn primary" id="fbSubmitBtn">提交建议</button>
+    </div>
+    <div class="wall-head"><b>大家的建议</b><span id="fbCount"></span></div>
+    <div class="wall" id="fbWall"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* API 基址：同源优先；若前端被托管到其他静态平台，则复用现有后端（已开放 CORS） */
+  var API_BASE = (function(){
+    var h = location.hostname;
+    if (!h || h === 'localhost' || h === '127.0.0.1') return '';
+    if (/(^|\.)netlify\.app$/.test(h)) return '';
+    return 'https://ai-job-resume-helper.netlify.app';
+  })();
+
+  var ETHICS = '本智能体仅作求职辅助，简历与面试内容以个人思考为主，请勿直接复制AI生成内容投递简历。若所用平台看不到访问数据，须提前向任课教师报备，改用问卷星统计体验人数。';
+  var OPENING = ETHICS;
+  var REFUSAL = '抱歉，这类请求我不能帮忙。\n\n' +
+    '我不能**直接替你写简历**，也不能**编造实习经历、项目、证书、技能或数据**。后果很实际：\n' +
+    '1. 背景调查与面试追问很容易戳穿虚构内容，一旦发现会直接失去录用机会；\n' +
+    '2. 造假记录可能在行业内留下不良印象，影响后续求职；\n' +
+    '3. 即便入职后被查出，也可能被解除劳动合同。\n\n' +
+    '我能做的是：把你**真实做过**的事情梳理清楚、优化表达、补上量化结果的提问指引。' +
+    '请把你真实的项目或经历告诉我，我来帮你润色和打磨。';
+
+  var MODE_INFO = {
+    diagnose: { title:'简历诊断', desc:'引用原文逐条指出问题，给出可执行的修改建议', placeholder:'发消息或按住空格说话…', hint:'上传简历后点文件卡片下的按钮，或直接输入；按 Ctrl + Enter 也可发送。', quick:'填入示例简历', quickAction:'demo' },
+    polish:   { title:'简历润色', desc:'先说明改了哪里、为什么改，再给润色后段落；不编造任何内容', placeholder:'粘贴需要润色的段落，可注明目标岗位……', hint:'润色只优化措辞，【】内需要你按真实情况补充。', quick:'', quickAction:'' },
+    interview:{ title:'AI 模拟面试', desc:'互动问答：一次只问一题，回答后先肯定、再建议、最后给参考思路', placeholder:'直接回答刚才的问题……', hint:'在左侧选择或自定义岗位；按 Ctrl + Enter 也可发送。', quick:'开始模拟面试', quickAction:'startInterview' },
+    bank:     { title:'面试题库生成', desc:'按岗位方向一次性列出 5-8 题及简要答题思路（非互动问答）', placeholder:'可输入岗位方向，如「数据标注」；或直接点右下按钮……', hint:'题库用于系统复习；想互动练习请切换到「AI 模拟面试」。', quick:'生成当前方向题库', quickAction:'genBank' },
+    tips:     { title:'求职提示', desc:'投递简历、选择实习单位的注意事项，专为大专学生整理', placeholder:'可问「投简历要注意什么」「怎么挑实习单位」……', hint:'求职提示只给通用注意事项，不承诺录用结果，也不代写简历。', quick:'生成求职提示', quickAction:'genTips' }
+  };
+
+  var WELCOME = {
+    diagnose: '### 简历诊断\n点上方「上传 Word 简历（.docx）」上传文件——上传后会显示文件卡片，**文字在后台解析、无需你复制粘贴**，并会自动从简历识别目标岗位。也可直接把简历原文粘贴到下方，我会逐条给出 **「问题 → 修改建议」**。\n\n上传后不会自动执行任何操作，请你从左侧自行选择功能：简历诊断、简历润色、AI 模拟面试、面试题库或求职提示。请以个人思考为主，不要照抄 AI 生成内容。',
+    polish: '### 简历润色\n把需要优化的简历内容粘贴到下方（上传简历后也可切换本功能自行粘贴），并注明目标岗位。我会**逐处对照展示**：每一处给出「**原文** → **润色后（完整内容）** → **为什么改**」，你可以直接照着替换到自己的简历里。\n\n润色只优化措辞，**不会编造** 项目、证书、技能或数据；需补充真实信息的地方会用【】标出。润色结果在对话里直接查看，不提供文件下载。',
+    interview: '### AI 模拟面试\n当前方向：**{POS}**。我会一次只问一题，你答完我再给点评（先肯定优点 → 改进建议 → 参考答题思路），然后进入下一题。\n\n点输入框右下角「开始模拟面试」即可出题。',
+    bank: '### 面试题库生成\n我会按岗位方向 **一次性列出 5-8 道题及答题思路**，用于系统复习（与互动面试不同）。\n\n预设方向可在左侧选择后点「生成当前方向题库」；任意专业岗位可在「自定义岗位」输入后点「应用岗位」，该岗位会自动用于诊断、润色、面试、题库和求职提示全部功能。',
+    tips: '### 求职提示\n我会给大专同学讲清两类事：**投递简历的注意事项**（投递前检查、渠道选择、邮件/平台规范、防骗）和**选择实习单位的注意事项**（岗位相关性、能否学到东西、协议与权益、时间安排、转正与坑点识别）。\n\n所有建议以个人判断为主，不承诺录用结果。点右下「生成求职提示」即可。'
+  };
+
+  var PRESETS = {
+    deepseek:{baseUrl:'https://api.deepseek.com/v1',model:'deepseek-chat'},
+    qwen:{baseUrl:'https://dashscope.aliyuncs.com/compatible-mode/v1',model:'qwen-plus'},
+    moonshot:{baseUrl:'https://api.moonshot.cn/v1',model:'moonshot-v1-8k'},
+    openai:{baseUrl:'https://api.openai.com/v1',model:'gpt-4o-mini'}
+  };
+
+  var BANKS = {
+    'AI数据标注': { questions: [
+      { q:'你理解的「数据标注」在 AI 模型训练中起什么作用？', a:'说明标注数据是模型学习的“教材”，质量直接决定模型效果；可举图像框选、文本分类标签等例子。' },
+      { q:'做图像标注时，如何保证标注的一致性和准确性？', a:'先吃透标注规范；遇到边界样本做标记而不是凭感觉猜；配合抽检复核，并与团队对齐模糊案例。' },
+      { q:'遇到规范描述不清的样本，你会怎么处理？', a:'先记录样本与疑问，向组长或规范文档确认，不自行臆断；确认后沉淀成案例供团队参考。' },
+      { q:'你用过哪些标注工具或平台？', a:'如实说明（如 Label Studio、公司自研平台、Excel 表格），强调上手速度、质量指标与批量处理经验。' },
+      { q:'你如何衡量自己的标注质量？', a:'关注准确率、一致性、返工率与抽检结果；出错后归类复盘错误类型，针对性改进。' },
+      { q:'标注工作重复度高，你如何保持专注和效率？', a:'拆分任务、设定小目标、熟练使用快捷键与模板，定时自检，避免疲劳导致的批量错误。' },
+      { q:'说说你对「数据质量」的理解。', a:'从准确性、完整性、一致性、时效性四个角度说，再结合标注岗位说明自己能守住哪几项。' }
+    ]},
+    '算法助理': { questions: [
+      { q:'你为什么想做算法助理？', a:'结合专业背景与真实兴趣，强调愿意从数据处理、实验记录、工程落地等基础工作做起。' },
+      { q:'Python 中你常用的库有哪些，分别解决什么问题？', a:'如实列举 numpy / pandas / scikit-learn 等，并讲一个你用它们完成过的具体小任务。' },
+      { q:'训练集、验证集、测试集有什么区别？', a:'训练集学习参数，验证集调参选型，测试集做最终评估；强调不能用测试集反复调参。' },
+      { q:'什么是过拟合？如何缓解？', a:'训练表现好、测试表现差；可通过增加数据、正则化、早停、简化模型等方式缓解。' },
+      { q:'模型准确率很高但实际效果不好，可能是什么原因？', a:'数据分布不匹配、类别不平衡、评估指标选错、数据泄漏等，逐条排查而不是只看一个数字。' },
+      { q:'你做过的最贴近算法的小项目是什么？', a:'用 STAR 讲清背景、你负责的具体工作、用到的方法、结果与反思；如实说明不夸大。' },
+      { q:'你如何理解「特征工程」？', a:'把原始数据转化为模型更容易学习的表示；举例归一化、one-hot、时间特征等，并说明目的。' }
+    ]},
+    '智能体运营': { questions: [
+      { q:'你理解的 AI 智能体（Agent）是什么？和普通聊天机器人有什么区别？', a:'能感知、规划、调用工具并 multi-step 执行任务；举例自动查询+下单、客服工单处理。' },
+      { q:'如果一个智能体回答错了，你会怎么排查？', a:'依次看提示词、知识库/检索结果、工具调用链路、参数配置，并用固定的测试用例复现问题。' },
+      { q:'你会如何评估一个智能体的效果？', a:'任务完成率、答案准确率、用户满意度、人工接管率等，结合具体业务场景选指标。' },
+      { q:'什么是提示词（Prompt）工程？你有什么经验？', a:'明确角色、任务、输出格式与约束，配合示例；强调要迭代测试而不是一次写完。' },
+      { q:'用户反馈智能体「答非所问」，你如何优化？', a:'分析意图识别是否偏差、补充知识库、优化提示词、必要时增加澄清环节。' },
+      { q:'如何把一个业务流程拆给智能体执行？', a:'梳理节点、明确每步输入输出、设置异常兜底与人机协同点，再逐步上线验证。' },
+      { q:'你觉得智能体运营岗位最重要的能力是什么？', a:'业务理解 + 数据意识 + 快速迭代 + 沟通协作，并各用一个真实例子支撑。' }
+    ]},
+    '技术支持': { questions: [
+      { q:'客户说「系统用不了」，你第一步怎么做？', a:'先安抚情绪，再收集报错截图、操作步骤、使用环境等信息，尝试复现后再定位原因。' },
+      { q:'如何向非技术客户解释一个技术问题？', a:'用生活化类比、少用术语，给可执行的步骤，并确认对方是否理解。' },
+      { q:'遇到暂时解决不了的问题怎么办？', a:'如实告知、完整记录、及时升级给资深同事，并跟进反馈形成闭环。' },
+      { q:'AI 产品常见的故障类型有哪些？', a:'模型响应慢或答错、接口报错、数据同步异常、权限配置问题等，分类排查。' },
+      { q:'你如何记录和管理工单？', a:'编号、分类、定优先级，记录处理过程，把解决方案沉淀为知识库条目。' },
+      { q:'客户情绪激动、持续投诉，你怎么处理？', a:'倾听共情、给出明确的时间承诺、同步进展，事后复盘避免重复发生。' },
+      { q:'你为什么适合技术支持岗位？', a:'结合耐心、沟通表达能力与计算机基础，举一个你处理过的类似情境。' }
+    ]}
+  };
+
+  var DEMO_RESUME = [
+    '姓名：张三','求职意向：人工智能相关岗位','教育背景：XX职业技术学院 计算机应用技术专业',
+    '主修课程：计算机基础、网页制作','校内经历：在校期间参与社团活动策划，负责宣传工作',
+    '技能：熟悉Python，了解机器学习，团队合作能力良好，吃苦耐劳',
+    '自我评价：本人学习能力强，认真负责，希望从事人工智能行业'
+  ].join('\n');
+
+  var state = {
+    mode:'diagnose', position:'AI数据标注', history:[],
+    useLLM:false, useServerConfig:false,
+    cfg:{baseUrl:'',apiKey:'',model:''},
+    interview:{phase:'ask',asked:0},
+    lastResumeText:'',  // 记住最近一次用于诊断的简历原文
+    attachment:null,    // 上传的简历文件：{name, ext, size, text, rawBase64} —— 文字仅内部保留，不铺进输入框
+    sourceFile:null,    // 最近上传的原始文件字节：{name, ext, rawBase64}
+    lastSummaryText:'', // 文档详细总结结果
+    lastPptText:''      // PPT 大纲结果（Markdown）
+  };
+
+  var $ = function (id) { return document.getElementById(id); };
+  var scrollEl = $('messages');
+  var messagesEl = $('msgList');
+  var inputEl = $('input');
+
+  function esc(s){return String(s).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});}
+
+  /* ---------- 用户身份 + 使用记录上报（写入本机 对话记录与建议/对话记录） ---------- */
+  function currentUser(){
+    var u='';
+    try{u=(localStorage.getItem('aiJobAssistantUser')||'').trim();}catch(e){}
+    return u||'匿名用户';
+  }
+  function logRecord(role,content){
+    if(typeof fetch!=='function')return;
+    try{
+      fetch(API_BASE+'/api/records',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({user:currentUser(),mode:state.mode,role:role,content:String(content||'').slice(0,20000)})
+      }).catch(function(){});
+    }catch(e){}
+  }
+
+  // 轻量 Markdown 渲染器：加粗 / 行内代码 / 有序列表 / 无序列表 / 标题 / 分隔线 / 换行
+  // 列表按连续行聚合为一个 <ol>/<ul>，避免把「1. 2.」显示成孤立的“行号”
+  function inlineMd(s){
+    return esc(s)
+      .replace(/`([^`]+)`/g,'<code>$1</code>')
+      .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  }
+  function renderMarkdown(src){
+    var lines=String(src==null?'':src).replace(/\r/g,'').split('\n');
+    var out=[],listType=null,para=[];
+    function closeList(){if(listType){out.push('</'+listType+'>');listType=null;}}
+    function flushPara(){if(para.length){out.push('<p>'+para.map(inlineMd).join('<br>')+'</p>');para=[];}}
+    lines.forEach(function(line){
+      var t=line.trim();
+      var ol=t.match(/^\d+[.)]\s+(.*)$/);
+      var ul=t.match(/^[-*·]\s+(.*)$/);
+      if(ol||ul){
+        flushPara();
+        var want=ol?'ol':'ul';
+        if(listType!==want){closeList();out.push('<'+want+'>');listType=want;}
+        out.push('<li>'+inlineMd(ol?ol[1]:ul[1])+'</li>');
+        return;
+      }
+      if(/^\s*(-{3,}|\*{3,})\s*$/.test(t)){flushPara();closeList();out.push('<hr>');return;}
+      var h=t.match(/^(#{1,4})\s+(.*)$/);
+      if(h){flushPara();closeList();var lv=h[1].length;out.push('<h'+lv+'>'+inlineMd(h[2])+'</h'+lv+'>');return;}
+      if(t===''){flushPara();closeList();return;}
+      closeList();para.push(t);
+    });
+    flushPara();closeList();
+    return out.join('');
+  }
+
+  function addMsg(role, text, action, opts) {
+    opts = opts||{};
+    state.history.push({role:role,content:text});
+    var div = document.createElement('div');
+    div.className = 'msg ' + role;
+    var av = document.createElement('div');
+    av.className = 'avatar';
+    av.textContent = role === 'assistant' ? 'AI' : '你';
+    var bubble = document.createElement('div');
+    bubble.className = 'bubble ' + (role === 'assistant' ? 'ai' : 'user');
+    if (opts.file) {
+      var fc = document.createElement('div');
+      fc.className = 'msg-file';
+      var fi = document.createElement('span');
+      fi.className = 'file-ico ' + (opts.file.ext === 'pdf' ? 'pdf' : 'word');
+      fi.textContent = opts.file.ext === 'pdf' ? 'PDF' : 'W';
+      var fm = document.createElement('span');
+      fm.className = 'file-meta';
+      var fn = document.createElement('div'); fn.className = 'file-name'; fn.textContent = opts.file.name;
+      var fs = document.createElement('div'); fs.className = 'file-sub'; fs.textContent = (opts.file.ext === 'pdf' ? 'PDF' : 'Word') + ' · ' + fmtSize(opts.file.size);
+      fm.appendChild(fn); fm.appendChild(fs);
+      fc.appendChild(fi); fc.appendChild(fm);
+      bubble.appendChild(fc);
+    }
+    var body = document.createElement('div');
+    body.innerHTML = renderMarkdown(text);
+    bubble.appendChild(body);
+    var actions = action ? (Array.isArray(action) ? action : [action]) : [];
+    actions.forEach(function(act){
+      var btn = document.createElement('button');
+      btn.className = 'flow-action' + (act.className ? ' ' + act.className : '');
+      btn.setAttribute('data-action', act.tag || 'toPolish');
+      btn.innerHTML = '<span class="arrow">' + (act.arrow || '→') + '</span> ' + act.label;
+      btn.addEventListener('click', act.onClick);
+      bubble.appendChild(btn);
+    });
+    div.appendChild(av);
+    div.appendChild(bubble);
+    messagesEl.appendChild(div);
+    scrollEl.scrollTop = scrollEl.scrollHeight;
+  }
+  function fmtSize(bytes){
+    if(!bytes && bytes!==0)return '';
+    return bytes >= 1024*1024 ? (bytes/1024/1024).toFixed(1)+' MB' : Math.max(1,Math.round(bytes/1024))+' KB';
+  }
+
+  var typingEl = null;
+  function showTyping(){
+    typingEl = document.createElement('div');
+    typingEl.className = 'msg assistant typing';
+    typingEl.innerHTML = '<div class="avatar">AI</div><div class="bubble ai"><span class="dots"><i></i><i></i><i></i></span></div>';
+    messagesEl.appendChild(typingEl);
+    scrollEl.scrollTop = scrollEl.scrollHeight;
+  }
+  function removeTyping(){if(typingEl&&typingEl.parentNode)typingEl.parentNode.removeChild(typingEl);typingEl=null;}
+
+  function isRefusal(text){
+    var t = String(text||'');
+    if (/(直接|帮我|替我|代写|请你).{0,8}(写|编|生成).{0,8}(一份|一篇)?\s*简历/.test(t)) return true;
+    if (/(编造|编|虚构|伪造|造假|杜撰|瞎编).{0,12}(实习|经历|项目|证书|技能|数据|成果|奖项)/.test(t)) return true;
+    if (/(实习经历|项目经历|证书|数据).{0,8}(编|虚构|伪造|造假|假的)/.test(t)) return true;
+    return false;
+  }
+
+  function updateBadge(){
+    var el=$('engineStatus'),txt=$('engineStatusText');
+    if(!el||!txt)return;
+    if(state.useLLM){
+      el.className='engine-status online';
+      txt.textContent='智能服务已连接'+(state.cfg.model?' · '+state.cfg.model:'');
+    }else{
+      el.className='engine-status local';
+      txt.textContent='本地规则引擎';
+    }
+  }
+
+  function updateModeUI(){
+    var info = MODE_INFO[state.mode];
+    document.querySelectorAll('.nav-item').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-mode')===state.mode);});
+    document.querySelectorAll('.pos-chip').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-pos')===state.position);});
+    $('modeTitle').textContent = info.title;
+    $('modeDesc').textContent = info.desc;
+    var pn = $('posNow');
+    if(pn) pn.textContent = state.position;
+    var pt = $('posTag');
+    if(pt) pt.textContent = state.position;
+    var badgeMap={diagnose:'🩺',polish:'✨',interview:'🎙️',bank:'📚',tips:'💡'};
+    $('modeBadge').textContent = badgeMap[state.mode]||'🤖';
+    $('hintText').textContent = info.hint;
+    inputEl.placeholder = info.placeholder;
+    var q = $('quickBtn');
+    q.textContent = info.quick;
+    q.style.display = info.quick ? 'inline-block' : 'none';
+    q.setAttribute('data-action', info.quickAction);
+    $('uploadRow').style.display = state.mode === 'diagnose' ? 'flex' : 'none';
+  }
+
+  function systemPrompt(){
+    var common = [
+      '你是「AI求职小助手」，为大专层次人工智能/计算机类专业学生提供求职辅助；同时也是一个真实、自然的对话助手：用户问什么，你就认真回答什么。',
+      '',
+      '【通用铁律】',
+      '- 必须真实回应用户本次输入的内容本身。用户问古诗、天气、常识或闲聊，就正常回答，绝不套用任何求职/简历模板。',
+      '- 使用简体中文，条理清晰，善用 Markdown 的加粗、列表与分段。',
+      '- 不夸大、不承诺录用结果、不代替用户做决定。',
+      '- 不得编造任何项目、证书、技能或数据，只能基于用户提供的真实内容。',
+      '- 若用户要求直接代写简历、或要求编造实习/项目/证书/数据，必须明确拒绝并说明后果（背景调查会被发现、失去机会、诚信受损、入职后被辞退）。',
+      '- 涉及求职内容时提醒用户以个人思考为主，不要直接复制 AI 生成内容投递。'
+    ];
+    var byMode = {
+      diagnose: [
+        '',
+        '【当前任务：简历诊断】',
+        '逐条指出问题并给修改建议，每条严格为「问题 → 修改建议」，引用原文词句、具体不空泛；按「个人信息 / 教育背景 / 实践与项目经历 / 技能 / 岗位匹配度」板块组织，最后给一句整体判断。'
+      ],
+      polish: [
+        '',
+        '【当前任务：简历润色】',
+        '面向 AI/计算机实习岗优化措辞，只优化表达，不得编造。按原文顺序，只对确实做了改动的段落逐处列块；严禁列出没有改动的行。',
+        '每块只用三行纯文本标签（标签本身不加任何星号或加粗）：第一行「原文：」+ 改前原句；第二行「润色后：」+ 可直接替换原文那一整处的完整句子（不是片段、不用省略号）；第三行「为什么改：」+ 一句话理由。多块之间空一行。',
+        '【个人信息铁律】姓名、手机号、邮箱、居住城市、个人网站/GitHub、求职意向、教育背景、公司名、职位名、时间日期等个人信息与客观事实，必须逐字原样保留，一个字都不能删改，也不能用【】替代；【】只允许用于原文缺失、需要本人补充的字段。',
+        '【展示铁律】不要输出「【润色后简历正文】」「【改动说明】」这类标记，不要把标签写成加粗，不要在结尾拼接整份简历全文或追加「需要我…吗」这类收尾。'
+      ],
+      interview: [
+        '',
+        '【当前任务：AI 模拟面试】',
+        '分两种情况处理：',
+        '（1）用户刚开始、明确要新题（如「开始模拟面试」「出题」），或还没回答上一题：只提出一道贴合该岗位真实工作场景、有区分度的题目，不要点评、不要给答题思路、不要自问自答。',
+        '（2）用户回答了上一题：先肯定一个具体优点，再给 1-2 条改进建议，最后给参考答题思路，然后提出下一题。',
+        '每轮只输出本轮内容，不要复述整段开场白或自我介绍。'
+      ],
+      bank: [
+        '',
+        '【当前任务：面试题库生成】',
+        '一次性列出该方向 5 道常见题，覆盖基础概念、实操场景、项目经历、软素质四类并标注类型。每题答题思路只用一句话（一行），全文严格控制在 550 字以内，务必精炼。'
+      ],
+      tips: [
+        '',
+        '【当前任务：求职提示】',
+        '讲清两类事。「投递简历注意事项」：投递前核对岗位匹配与联系方式、按岗位定制简历、文件命名与格式（优先 PDF/Word）、邮件与平台投递规范、投递记录与跟进、常见骗局识别（押金/培训贷/刷单/扣证件）。「选择实习单位注意事项」：岗位与专业相关性、能否真正学到东西、带教与工作内容、实习协议与权益（报酬/工时/保险）、时间安排是否与课程冲突、转正与背调要点、识别「打杂/销售冒充技术岗」。每条具体可执行，提醒以个人判断为主。'
+      ]
+    };
+    var tail = [
+      '',
+      '【会话状态】',
+      '岗位方向：' + state.position + '。五项功能都必须围绕该岗位展开，回复开头点名当前岗位（例如「针对【' + state.position + '】岗位…」）。'
+    ];
+    if (state.mode === 'interview' && state.interview.asked > 0) {
+      tail.push('面试进行中：用户上一条是对题目的作答，请先点评（肯定 → 改进建议 → 参考思路）再问下一题。');
+    }
+    return common.concat(byMode[state.mode] || [], tail).join('\n');
+  }
+
+  function callLLM(userText){
+    var msgs = state.history.slice(-14).map(function(m){return {role:m.role,content:m.content};});
+    if (userText){var last=msgs[msgs.length-1];if(!last||last.role!=='user'||last.content!==userText)msgs.push({role:'user',content:userText});}
+    return fetch(API_BASE+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:systemPrompt(),messages:msgs,config:state.useServerConfig?{}:state.cfg})})
+      .then(function(r){return r.json().then(function(d){return {ok:r.ok,data:d};});})
+      .then(function(res){if(!res.ok||!res.data||!res.data.content)throw new Error((res.data&&res.data.message)||'模型调用失败');return res.data.content;});
+  }
+
+  /* ---------- 本地规则引擎 ---------- */
+  function findSentence(sentences,re){for(var i=0;i<sentences.length;i++){if(re.test(sentences[i]))return sentences[i];}return null;}
+  var TYPO_MAP={'熟习':'熟悉','掌屋':'掌握','经厉':'经历','负则':'负责','参于':'参与','标柱':'标注','数剧':'数据','计箅机':'计算机','计祘机':'计算机','人工智能力':'人工智能','实习经厉':'实习经历','熟炼':'熟练','算法的助理':'算法助理','技朮':'技术','支缓':'支持','培讯':'培训'};
+
+  function localDiagnose(text){
+    var raw=String(text||'').trim();
+    var sentences=raw.split(/[\n。；;]+/).map(function(s){return s.trim();}).filter(Boolean);
+    var issues=[];
+    Object.keys(TYPO_MAP).forEach(function(wrong){var at=raw.indexOf(wrong);if(at>=0){var snippet=raw.slice(Math.max(0,at-8),at+wrong.length+8);issues.push('**问题**：「'+snippet+'」中的「'+wrong+'」是错别字 → **修改建议**：改为「'+TYPO_MAP[wrong]+'」，并通读全文检查同类拼写错误。');}});
+    if(!/1[3-9]\d{9}/.test(raw)&&!/[\w.+-]+@[\w-]+\./.test(raw))issues.push('**问题**：未发现手机号或邮箱，联系方式缺失 → **修改建议**：在姓名下方补充「电话 / 邮箱 / 所在城市」，方便 HR 联系。');
+    var s1=findSentence(sentences,/熟悉|了解|掌握|熟练/);if(s1)issues.push('**问题**：「'+s1+'」用了「熟悉 / 了解」类词但没有证据 → **修改建议**：改成「在 XX 项目/课程中用 XX 完成 XX，结果 XX」，用具体经历替掉自评。');
+    var s2=findSentence(sentences,/吃苦耐劳|认真负责|团队合作|沟通能力|积极向上|学习能力强/);if(s2)issues.push('**问题**：「'+s2+'」是主观评价，缺少事实支撑 → **修改建议**：删掉空泛形容词，换成能体现该特质的一件具体事。');
+    var s3=findSentence(sentences,/负责|参与|协助/);if(s3)issues.push('**问题**：「'+s3+'」只写了职责，没写成果 → **修改建议**：按「做了什么 → 用了什么方法 → 带来什么结果」重写，尽量带数字。');
+    if(!/\d/.test(raw))issues.push('**问题**：全文几乎没有数字 → **修改建议**：补充量化信息（数据量、准确率、效率提升、周期、项目数量）。');
+    if(!/20\d\d/.test(raw))issues.push('**问题**：缺少明确时间线 → **修改建议**：为教育经历与实践经历标注「YYYY.MM - YYYY.MM」。');
+    if(!/大学|学院|学校|大专|专业/.test(raw))issues.push('**问题**：学历与专业不清晰 → **修改建议**：在简历上部写明「学校 · 专业 · 学历 · 毕业时间」。');
+    if(!/python|sql|linux|git|excel|机器学习|数据标注|pytorch|numpy|pandas/i.test(raw))issues.push('**问题**：未出现 AI/计算机岗位常见技能关键词 → **修改建议**：若确实掌握，请如实列出（如 Python、SQL、Git、标注工具）并注明对应的真实经历。');
+    var long=sentences.find(function(s){return s.length>90;});if(long)issues.push('**问题**：「'+long.slice(0,40)+'…」单段过长、信息密度低 → **修改建议**：拆成 2-3 条要点，每条只讲一个成果。');
+    if(!issues.length)issues.push('**问题**：暂未发现明显硬伤 → **修改建议**：继续为每段经历补充量化结果，并按目标岗位调整技能关键词的呈现顺序。');
+    return '**简历诊断结果（共 '+issues.length+' 条）**\n\n'+issues.map(function(x,i){return (i+1)+'. '+x;}).join('\n\n')+'\n\n---\n说明：诊断仅基于你提供的文字，未核实的经历请自行判断；建议结合真实情况采纳。';
+  }
+
+  function localPolish(text){
+    var raw=String(text||'').trim();var lines=raw.split(/\n+/).map(function(s){return s.trim();}).filter(Boolean);
+    var personalRe=/(^|：|:)\s*(姓名|手机|电话|邮箱|邮件|e-?mail|地址|现居|居住|籍贯|求职意向|意向岗位|个人网站|github|博客|微信号?|微信|出生|性别|政治面貌|年龄)/i;
+    var blocks=[];
+    lines.forEach(function(line){
+      if(personalRe.test(line))return; // 个人信息行原样保留，无需改动就不列出
+      var r=line,why='';
+      var mm;
+      if((mm=line.match(/^熟悉(.+)$/))){r='具备 '+mm[1]+' 的实践经验【请补充真实项目或课程名称】';why='把主观的「熟悉」换成可验证的实践经验表述。';}
+      else if((mm=line.match(/^了解(.+)$/))){r='接触过 '+mm[1]+'【请补充真实使用场景】';why='用真实使用场景替代笼统的「了解」。';}
+      else if((mm=line.match(/^掌握(.+)$/))){r='能够运用 '+mm[1]+' 完成【请补充真实任务】';why='把能力落到可核实的具体任务上。';}
+      else if((mm=line.match(/^负责(.+)$/))){r='负责 '+mm[1]+'，【请补充具体做法与结果数据】';why='补上做法与结果，让职责变成可见的贡献。';}
+      else if((mm=line.match(/^参与(.+)$/))){r='参与 '+mm[1]+'，承担【请补充你负责的部分】，结果【请补充真实数据】';why='说清个人承担部分和结果，避免含糊。';}
+      else if((mm=line.match(/^协助(.+)$/))){r='协助 '+mm[1]+'，【请补充你产出的具体成果】';why='用具体产出替代笼统的「协助」。';}
+      else if(/(良好的|较强的|优秀的)/.test(line)){r=line.replace(/(良好的|较强的|优秀的)/g,'').trim();why='删去空泛修饰，让事实说话。';}
+      else return; // 无可改动就不列出
+      blocks.push('原文：'+line+'\n润色后：'+r+'\n为什么改：'+why);
+    });
+    if(!blocks.length)return '这段内容暂未发现明显可优化之处，整体表达清晰。若想更贴合目标岗位，可把具体经历补充给我，我再逐处润色。';
+    return '### 逐处润色对照\n\n'+blocks.join('\n\n')+'\n\n---\n【】中的内容需你按真实经历填写，切勿编造；以个人思考为主，不要照抄。';
+  }
+
+  function affirmFor(answer){var clean=String(answer||'').replace(/\s+/g,'').slice(0,22);if(!clean)return '你愿意主动作答，这本身就是很好的开始。';return '你提到「'+clean+'…」，说明你有自己的表达和思考，这一点值得肯定。';}
+  var IMPROVE='1. 用 STAR（背景 - 任务 - 行动 - 结果）把经历讲具体，重点说清「你做了什么」和「结果如何」。\n2. 结尾补一句你自己的复盘或收获，体现思考，而不是只描述流程。';
+
+  function localInterview(text,start){
+    var qs=questionsForPosition(state.position);
+    if(start||state.interview.phase==='ask'||state.interview.phase==='done'){
+      state.interview.asked=0;state.interview.phase='review';
+      return '好的，我们进行【'+state.position+'】方向的模拟面试。我会一次只问一题。\n\n**第 1 题 / 共 '+qs.length+' 题**\n'+qs[0].q+'\n\n请直接回答。';
+    }
+    var idx=Math.min(state.interview.asked,qs.length-1);var answer=text||'（未作答）';
+    var review='**点评**\n'+affirmFor(answer)+'\n\n**改进建议**\n'+IMPROVE+'\n\n**参考答题思路**\n'+qs[idx].a;
+    state.interview.asked+=1;
+    if(state.interview.asked>=qs.length){state.interview.phase='done';return review+'\n\n---\n本次模拟面试已完成 '+qs.length+' 题。建议回看自己的回答，把「参考思路」改写成你自己的话，不要照背。';}
+    var next=state.interview.asked;return review+'\n\n---\n**第 '+(next+1)+' 题 / 共 '+qs.length+' 题**\n'+qs[next].q+'\n\n请回答。';
+  }
+
+  // 从简历文字识别目标岗位：优先读「求职意向/目标岗位/应聘岗位」等显式字段，
+  // 其次用技能/经历关键词映射到预设方向；识别不到返回空串（保留用户当前岗位，不乱猜）。
+  function detectPosition(text){
+    var t=String(text||'');
+    var m=t.match(/(?:求职意向|目标岗位|意向岗位|应聘岗位|期望职位|求职方向)\s*[:：]?\s*([^\n，,。；;]{2,20})/);
+    if(m){var v=m[1].trim().replace(/^(方向|岗位|职位)/,'').trim();if(v&&v.length<=18)return v;}
+    var keys=[['数据标注','AI数据标注'],['智能体','智能体运营'],['agent','智能体运营'],['算法','算法助理'],['机器学习','算法助理'],['深度学习','算法助理'],['技术支持','技术支持'],['运维','技术支持'],['客服','技术支持'],['前端','前端开发'],['测试','软件测试'],['会计','会计助理'],['财务','会计助理']];
+    for(var i=0;i<keys.length;i++){if(t.indexOf(keys[i][0])>=0)return keys[i][1];}
+    return '';
+  }
+  function guessPosition(text){return detectPosition(text)||state.position;}
+  function questionsForPosition(pos){
+    if(BANKS[pos])return BANKS[pos].questions;
+    // 自定义岗位：生成结构化通用题，使模拟面试/题库同样可用
+    return [
+      {q:'请做一下自我介绍，并说明为什么应聘「'+pos+'」岗位？',a:'用 1 分钟讲清背景、相关技能与动机，最后落到与岗位的匹配点，避免流水账。'},
+      {q:'你认为做好「'+pos+'」最重要的三项能力是什么？',a:'结合岗位要求列出能力，并各配一个真实经历或课程项目作为佐证。'},
+      {q:'请举一个你遇到问题并独立解决的例子。',a:'用 STAR（背景-任务-行动-结果）讲清过程，重点突出你的思考与复盘。'},
+      {q:'你如何快速学习一项新技能来适应岗位要求？',a:'说明信息来源、学习计划、动手实践和验证方式，最好有真实案例。'},
+      {q:'与同事意见不一致时，你会怎么处理？',a:'先理解对方依据，再以事实和共同目标沟通，必要时请第三方评估，不情绪化。'},
+      {q:'如果入职后发现实际工作与预期不同，你会怎么办？',a:'主动了解全貌、向前辈请教，调整预期并制定具体的弥补计划。'},
+      {q:'你怎么看待工作中的重复性任务，会如何提升效率？',a:'如实表达态度，强调用工具与流程优化效率，并举例说明你做过的改进。'}
+    ];
+  }
+  function localBank(text){
+    var pos=guessPosition(text);state.position=pos;updateModeUI();
+    var qs=questionsForPosition(pos);var out='**【'+pos+'】常见面试题清单（共 '+qs.length+' 题）**\n\n';
+    qs.forEach(function(item,i){out+='**'+(i+1)+'. '+item.q+'**\n答题思路：'+item.a+'\n\n';});
+    out+='---\n说明：题库用于系统复习；想要互动练习请切换到「AI 模拟面试」，我会一次只问一题。';return out;
+  }
+  function localCustomBank(pos){
+    var name=String(pos||'该岗位').trim();
+    var qs=[
+      {q:'请做一下自我介绍，并说明为什么应聘「'+name+'」岗位？',a:'用 1 分钟讲清背景、相关技能与动机，最后落到与岗位的匹配点，避免流水账。'},
+      {q:'你认为做好「'+name+'」最重要的三项能力是什么？',a:'结合岗位要求列出能力，并各配一个真实经历或课程项目作为佐证。'},
+      {q:'请举一个你遇到问题并独立解决的例子。',a:'用 STAR（背景-任务-行动-结果）讲清过程，重点突出你的思考与复盘。'},
+      {q:'你如何快速学习一项新技能来适应岗位要求？',a:'说明信息来源、学习计划、动手实践和验证方式，最好有真实案例。'},
+      {q:'与同事意见不一致时，你会怎么处理？',a:'先理解对方依据，再以事实和共同目标沟通，必要时请第三方评估，不情绪化。'},
+      {q:'如果入职后发现实际工作与预期不同，你会怎么办？',a:'主动了解全貌、向前辈请教，调整预期并制定具体的弥补计划。'},
+      {q:'你怎么看待工作中的重复性任务，会如何提升效率？',a:'如实表达态度，强调用工具与流程优化效率，并举例说明你做过的改进。'}
+    ];
+    var out='**【'+name+'】常见面试题清单（共 '+qs.length+' 题 · 自定义岗位通用版）**\n\n';
+    qs.forEach(function(item,i){out+='**'+(i+1)+'. '+item.q+'**\n答题思路：'+item.a+'\n\n';});
+    out+='---\n说明：该岗位不在预设库中，以上为通用结构化题库；接入大模型后可生成更贴合该岗位的资料。';return out;
+  }
+  function localTips(){
+    var pos=state.position||'目标';
+    return '### 求职提示（面向大专同学 · '+pos+'方向）\n\n'+
+      '**一、投递简历注意事项**\n'+
+      '1. **按岗位定制**：投递前对照岗位要求调整简历重点，突出与「'+pos+'」相关的技能与真实经历，不海投同一份。\n'+
+      '2. **投递前核对**：姓名、手机号、邮箱是否准确；文件命名建议「姓名-应聘岗位-学校」，格式优先 PDF，避免打不开的冷门格式。\n'+
+      '3. **渠道与规范**：优先企业官网、学校就业网、正规招聘平台；邮件投递写清应聘岗位与简短自我介绍，附件不要遗漏。\n'+
+      '4. **做好记录**：用表格记下投递的公司、岗位、时间与进度，便于跟进和复盘。\n'+
+      '5. **防骗提醒**：凡是入职前收押金、培训费、办卡扣证件的，一律拒绝；「刷单」「轻松高薪」多为骗局。\n\n'+
+      '**二、选择实习单位注意事项**\n'+
+      '1. **岗位相关性**：优先能用到本专业、与「'+pos+'」方向相关的岗位，避免「技术岗」实为销售/客服。\n'+
+      '2. **能否学到东西**：问清带教安排、日常工作内容，拒绝长期只做打印、跑腿等纯打杂。\n'+
+      '3. **协议与权益**：签实习协议，写明报酬、工时、是否缴保险；口头承诺要落到纸面。\n'+
+      '4. **时间冲突**：确认实习时间不与课程、考试冲突，别因实习影响学业。\n'+
+      '5. **转正与背书**：了解转正标准与是否出具实习证明；离职按约定提前告知。\n\n'+
+      '---\n以上为通用建议，请结合个人情况判断，勿直接照搬；不承诺录用结果。';
+  }
+  function localRespond(text){
+    if(isRefusal(text))return REFUSAL;
+    switch(state.mode){case 'diagnose':return localDiagnose(text);case 'polish':return localPolish(text);case 'interview':return localInterview(text,false);case 'bank':return localBank(text);case 'tips':return localTips();default:return '请选择左侧的一个功能后重试。';}
+  }
+
+  /* ---------- 统一回复流程 ---------- */
+  // configReady：配置探测 Promise，保证发送前 useLLM/useServerConfig 已经确定，消除竞态
+  var configPromise = Promise.resolve();
+
+  function assistantTurn(userText, special, action){
+    // 快捷动作（开始模拟面试 / 生成题库）原本 userText=null，
+    // 导致发给智谱的 messages 以 assistant 开场白结尾或为空 → "messages 参数非法" → 前端误显示"模型返回内容为空"。
+    // 这里按动作补一条明确的 user 意图消息，保证 messages 最后一条是 user。
+    if(!userText && special){
+      var pos=state.position||'目标岗位';
+      if(special==='startInterview')userText='请针对【'+pos+'】岗位开始第一轮模拟面试，只问第一道题。';
+      else if(special==='genBank'||special==='customBank')userText='请生成【'+pos+'】方向的面试题库，列出5-8道常见题及简短答题思路。';
+    }
+    showTyping();
+    var fallback=function(){
+      if(special==='startInterview')return localInterview(null,true);
+      if(special==='genBank')return localBank('');
+      if(special==='customBank')return localCustomBank(state.position);
+      if(special==='genTips')return localTips();
+      return localRespond(userText);
+    };
+    // 等配置就绪后再决定是否调用模型
+    var p = configPromise.then(function(){
+      if(state.useLLM){
+        // 真实大模型：失败只明确报错，绝不静默回退到本地正则模板
+        return callLLM(userText).catch(function(e){
+          return '⚠️ 智能服务调用失败：'+(e&&e.message?e.message:String(e))+
+            '\n\n为避免给出与问题无关的回答，本次不使用本地模板替代。请检查网络后重试，或到右上角设置确认接口配置。';
+        });
+      }
+      // 仅当用户主动选择「本地规则引擎」时才走这里
+      return new Promise(function(resolve){setTimeout(function(){resolve(fallback());},200);});
+    });
+    p.then(function(reply){
+      removeTyping();
+      // 按任务类型保存结果，供对应的「下载」按钮使用（action 可能是数组）
+      var tags=[];
+      (action?(Array.isArray(action)?action:[action]):[]).forEach(function(a){if(a&&a.tag)tags.push(a.tag);});
+      if(tags.indexOf('downloadSummary')>=0) state.lastSummaryText=reply;
+      if(tags.indexOf('downloadPpt')>=0) state.lastPptText=reply;
+      addMsg('assistant',reply,action);
+      logRecord('assistant',reply);
+      if(state.mode==='interview'&&state.interview.asked>0)state.interview.phase='review';
+    })
+     .catch(function(e){removeTyping();addMsg('assistant','发生异常：'+(e&&e.message?e.message:String(e)));});
+  }
+
+  function send(opts){
+    opts=opts||{};
+    var text=inputEl.value.trim();
+    var att=state.attachment;
+    if((!text&&!att)||typingEl)return;
+    hideHero();
+    inputEl.value='';
+
+    var effectiveText=text, fileForBubble=null, displayText=text;
+    var isResumeFlow=false;
+    if(opts.effectiveText){effectiveText=opts.effectiveText;}
+    if(opts.displayText){displayText=opts.displayText;}
+
+    // ===== 文件卡片三个快捷任务：详细总结 / 生成 PPT / 润色文档 =====
+    if(opts.fileTask && att){
+      fileForBubble={name:att.name,ext:att.ext,size:att.size};
+      state.lastResumeText=att.text;
+      isResumeFlow=true;
+      if(opts.fileTask==='summary'){
+        effectiveText='请详细总结下面这份简历/文档的内容。要求：按板块梳理出关键信息（个人信息、求职意向、教育背景、经历、技能等），条理清晰、分点呈现；只总结原文已有的真实内容，不要编造，也不要给出修改建议。\n\n文档原文：\n'+att.text;
+        displayText=displayText||('详细总结文档内容：'+att.name);
+        // 不清除附件，方便继续润色；总结结果单独保存供下载
+      }else if(opts.fileTask==='ppt'){
+        effectiveText='请把下面这份简历/文档整理成一份 PPT 汇报大纲。要求：按页组织，每页给出「第 N 页 · 页面标题」以及该页 2-4 条要点；结构包含封面、个人简介、教育背景、实践/项目经历、技能、求职意向、结尾致谢；只使用原文真实内容，不要编造。用 Markdown 的标题与列表输出。\n\n文档原文：\n'+att.text;
+        displayText=displayText||('生成 PPT：'+att.name);
+      }
+    }else if(state.mode==='diagnose'&&att){
+      // 诊断模式有附件：用内部保留的简历文字发起诊断，气泡显示文件卡片而非文字
+      fileForBubble={name:att.name,ext:att.ext,size:att.size};
+      state.lastResumeText=att.text;
+      effectiveText=att.text+(text?'\n\n【补充说明】'+text:'');
+      displayText=text||('请帮我诊断这份简历：'+att.name);
+      state.attachment=null;showFileChip();
+      $('uploadStatus').textContent='上传后自动解析，无需粘贴文字';
+      isResumeFlow=true;
+    }else if(state.mode==='diagnose'&&text.length>=20){
+      state.lastResumeText=text;
+    }
+
+    addMsg('user',displayText,null,{file:fileForBubble});
+    logRecord('user',effectiveText);
+    // 伦理拦截只针对用户主动输入的指令；
+    // 附件诊断、一键润色属于简历内容流转，不按"代写请求"处理（原文含"编写/编"等正常词会误判）
+    if(!opts.fromResume && !isResumeFlow && isRefusal(text)){
+      showTyping();
+      setTimeout(function(){removeTyping();addMsg('assistant',REFUSAL);},220);
+      return;
+    }
+    var action=null;
+    if(opts.fileTask==='summary'){
+      action=[
+        {label:'下载总结 Word',tag:'downloadSummary',className:'download',arrow:'⬇',onClick:downloadGenericWord('summary')},
+        {label:'下载总结 PDF',tag:'downloadSummaryPdf',className:'download',arrow:'⬇',onClick:downloadGenericPdf('summary')}
+      ];
+    }else if(opts.fileTask==='ppt'){
+      action=[
+        {label:'下载 PPT 大纲 Word',tag:'downloadPpt',className:'download',arrow:'⬇',onClick:downloadGenericWord('ppt')},
+        {label:'下载 PPT 大纲 PDF',tag:'downloadPptPdf',className:'download',arrow:'⬇',onClick:downloadGenericPdf('ppt')}
+      ];
+    }
+    // 诊断结果不再提供「一键润色」，润色回复也不再提供下载按钮；均由用户自行选择功能
+    assistantTurn(effectiveText,null,action);
+  }
+
+  /* ---------- 通用：把 Markdown 文本导出为 Word 或 PDF（真正的一键文件下载） ---------- */
+  function exportFile(text, filename, mode, btn, type, opts){
+    type = type || 'docx';
+    opts = opts || {};
+    if(!text){alert('请先完成对应操作，再下载文件。');return;}
+    if(btn){btn.disabled=true;var old=btn.innerHTML;btn.innerHTML='<span class="arrow">⏳</span> 正在生成…';btn._old=old;}
+    function restore(){if(btn){btn.disabled=false;btn.innerHTML=btn._old||'⬇ 下载';}}
+    if(typeof fetch!=='function'){alert('当前环境不支持导出。');restore();return;}
+    // keepSource：润色下载时带上原始文件字节，后端据此套用原件样式（字体/字号/颜色/页边距）
+    var payload={text:text,mode:mode||'doc'};
+    if(opts.keepSource && state.sourceFile){
+      payload.sourceBase64=state.sourceFile.rawBase64;
+      payload.sourceExt=state.sourceFile.ext;
+      payload.sourceName=state.sourceFile.name;
+    }
+    fetch(API_BASE+'/api/export-' + type,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    }).then(function(r){
+      if(!r.ok){return r.json().then(function(d){throw new Error((d&&d.error)||('HTTP '+r.status));});}
+      return r.blob();
+    }).then(function(blob){
+      var url=URL.createObjectURL(blob);
+      var a=document.createElement('a');
+      a.href=url;a.download=filename;
+      document.body.appendChild(a);a.click();document.body.removeChild(a);
+      setTimeout(function(){URL.revokeObjectURL(url);},1500);
+      restore();
+    }).catch(function(e){
+      alert('导出失败：'+((e&&e.message)||'网络错误'));
+      restore();
+    });
+  }
+  function exportDocx(text, filename, mode, btn, opts){ exportFile(text, filename, mode, btn, 'docx', opts); }
+  function exportPdf(text, filename, mode, btn, opts){ exportFile(text, filename, mode, btn, 'pdf', opts); }
+
+  /* ---------- 下载总结/PPT 结果（e 为点击事件，用于按钮 loading 态） ---------- */
+  function eventBtn(e){ return e && e.currentTarget ? e.currentTarget : (e && e.target ? e.target : null); }
+  function downloadGeneric(kind, type, e){
+    var base={
+      summary:{text:state.lastSummaryText,file:'文档详细总结',mode:'doc',tip:'请先点「详细总结文档内容」'},
+      ppt:{text:state.lastPptText,file:'PPT大纲-'+(state.position||'简历'),mode:'ppt',tip:'请先点「生成 PPT」'}
+    }[kind];
+    if(!base)return;
+    if(!base.text){alert(base.tip+'，再下载。');return;}
+    var filename=base.file+'.'+type;
+    if(type==='pdf') exportPdf(base.text, filename, base.mode, eventBtn(e));
+    else exportDocx(base.text, filename, base.mode, eventBtn(e));
+  }
+  function downloadGenericWord(kind){ return function(e){ downloadGeneric(kind, 'docx', e); }; }
+  function downloadGenericPdf(kind){ return function(e){ downloadGeneric(kind, 'pdf', e); }; }
+
+  /* ---------- 事件 ---------- */
+  $('sendBtn').addEventListener('click',send);
+  inputEl.addEventListener('keydown',function(e){if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();send();}});
+
+  // 文件卡片三个快捷按钮：详细总结 / 生成 PPT / 润色文档
+  document.querySelectorAll('#fileActions .file-act').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      if(!state.attachment){alert('请先上传简历（推荐 Word .docx，可原样保留样式与照片）。');return;}
+      send({fileTask:this.getAttribute('data-task'),fromResume:true});
+    });
+  });
+
+  $('quickBtn').addEventListener('click',function(){
+    var action=this.getAttribute('data-action');
+    if(action==='demo'){inputEl.value=DEMO_RESUME;inputEl.focus();}
+    else if(action==='startInterview'){state.interview={phase:'ask',asked:0};assistantTurn(null,'startInterview');}
+    else if(action==='genBank'){assistantTurn(null,'genBank');}
+    else if(action==='genTips'){assistantTurn('请给我针对【'+state.position+'】岗位投递简历和选择实习单位的注意事项，面向大专学生');}
+  });
+
+  function arrayBufferToBase64(buf){
+    var bytes=new Uint8Array(buf),chunk=0x8000,parts=[];
+    for(var i=0;i<bytes.length;i+=chunk){parts.push(String.fromCharCode.apply(null,bytes.subarray(i,i+chunk)));}
+    return btoa(parts.join(''));
+  }
+
+  function joinPdfItems(items){
+    var out='',prev=null;
+    items.forEach(function(it){var s=it.str||'';if(!s)return;if(prev){var dy=Math.abs(it.transform[5]-prev.transform[5]);var h=it.height||prev.height||10;var gap=it.transform[4]-(prev.transform[4]+prev.width);if(dy>h*0.6)out+='\n';else if(gap>h*0.25)out+=' ';}out+=s;if(it.hasEOL)out+='\n';prev=it;});
+    return out;
+  }
+
+  $('resumeFile').addEventListener('change',function(e){
+    var file=e.target.files&&e.target.files[0];if(!file)return;
+    var ext=(file.name.split('.').pop()||'').toLowerCase();var status=$('uploadStatus');
+    status.textContent='正在解析 '+file.name+' …';
+    function fail(msg){status.textContent='解析失败：'+msg+'（可直接粘贴文本）';status.className='upload-status warn';}
+    file.arrayBuffer().then(function(buf){
+      var rawBase64=arrayBufferToBase64(buf);
+      var parsePromise;
+      if(ext==='pdf'){
+        if(!window.pdfjsLib)throw new Error('PDF 解析库未加载，请检查网络');
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc='/vendor/pdf.worker.min.js';
+        parsePromise=window.pdfjsLib.getDocument({data:new Uint8Array(buf)}).promise.then(function(pdf){
+          var jobs=[];for(var i=1;i<=pdf.numPages;i++)jobs.push(pdf.getPage(i).then(function(page){return page.getTextContent().then(function(tc){return joinPdfItems(tc.items);});}));
+          return Promise.all(jobs).then(function(pages){return pages.join('\n');});
+        });
+      }else if(ext==='docx'||ext==='doc'){
+        if(!window.mammoth)throw new Error('Word 解析库未加载，请检查网络');
+        parsePromise=window.mammoth.extractRawText({arrayBuffer:buf}).then(function(res){return res.value||'';});
+      }else{
+        throw new Error('仅支持 PDF / DOCX 文件');
+      }
+      return parsePromise.then(function(text){return {text:text,rawBase64:rawBase64};});
+    }).then(function(result){
+      var cleaned=String(result.text||'').replace(/\r/g,'').replace(/[ \t]+/g,' ').replace(/\n{3,}/g,'\n\n').trim();
+      if(!cleaned)throw new Error('未提取到文字，可能是扫描件');
+      // 保留真实扩展名（pdf/docx/doc）：后端据此判断是否走「原文件保真替换」路径。
+      // 注意：不能简化成 'word'，否则后端无法识别 docx，证件照/复选框/样式会丢失。
+      var fext=(ext==='pdf'?'pdf':(ext==='doc'?'doc':'docx'));
+      // 文字仅内部保留，不铺进输入框；改为显示文件卡片
+      state.attachment={name:file.name,ext:fext,size:file.size,text:cleaned,rawBase64:result.rawBase64};
+      // 保存原始文件字节：润色后导出时用于套用原件样式
+      state.sourceFile={name:file.name,ext:fext,rawBase64:result.rawBase64};
+      showFileChip();
+      if(fext==='docx'){
+        status.textContent='已解析 '+file.name+'（'+cleaned.length+' 字）· 将原样保留照片与排版';
+        status.className='upload-status good';
+      }else{
+        status.textContent='已解析 '+file.name+'（'+cleaned.length+' 字）· 另存为 .docx 可原样保留样式';
+        status.className='upload-status warn';
+      }
+      // 从简历自动识别目标岗位：回填到左侧输入框并设为全局岗位，后续五项功能直接沿用
+      var detected=detectPosition(cleaned);
+      if(detected){
+        state.position=detected;state.interview={phase:'ask',asked:0};updateModeUI();
+        $('customPosInput').value=detected;
+        $('customPosLabel').textContent='识别到的岗位';
+        $('customPosHint').textContent='已从简历自动识别，可直接在左侧修改后点「应用岗位」';
+        status.textContent+=' · 已识别岗位【'+detected+'】';
+      }
+      // 上传后不自动发起任何功能，由用户自行从左侧选择（诊断/润色/面试/题库/求职提示）
+      inputEl.focus();
+    }).catch(function(err){fail(err&&err.message?err.message:String(err));});
+    e.target.value='';
+  });
+
+  function showFileChip(){
+    var a=state.attachment;var chip=$('fileChip');
+    if(!a){chip.classList.remove('show');return;}
+    $('fileName').textContent=a.name;
+    $('fileSub').textContent=(a.ext==='pdf'?'PDF':'Word')+' · '+fmtSize(a.size);
+    var ico=$('fileIco');ico.textContent=a.ext==='pdf'?'PDF':'W';ico.className='file-ico '+(a.ext==='pdf'?'pdf':'word');
+    chip.classList.add('show');
+  }
+  $('fileDel').addEventListener('click',function(){
+    state.attachment=null;showFileChip();
+    var st=$('uploadStatus');st.textContent='上传后自动解析，无需粘贴文字';st.className='upload-status';
+  });
+
+  $('customPosBtn').addEventListener('click',function(){
+    var v=$('customPosInput').value.trim();
+    if(!v){alert('请先输入岗位名称，例如「游戏测试」。');return;}
+    // 设为全局岗位，但不强制切到题库模式：诊断/润色/面试/题库/求职提示全部围绕它展开
+    state.position=v;state.interview={phase:'ask',asked:0};updateModeUI();
+    var acts=[
+      {label:'诊断这份岗位的简历',tag:'toDiagnose',arrow:'→',onClick:function(){switchMode('diagnose');}},
+      {label:'按该岗位润色简历',tag:'toPolish',arrow:'→',onClick:function(){switchMode('polish');}},
+      {label:'开始模拟面试',tag:'toInterview',arrow:'→',onClick:function(){switchMode('interview');assistantTurn(null,'startInterview');}},
+      {label:'生成该岗位题库',tag:'toBank',arrow:'→',onClick:function(){switchMode('bank');assistantTurn(null,'genBank');}},
+      {label:'查看求职提示',tag:'toTips',arrow:'→',onClick:function(){switchMode('tips');assistantTurn('请给我针对【'+v+'】岗位的投递简历与选择实习单位注意事项');}}
+    ];
+    addMsg('assistant','✅ 已把当前岗位设为 **【'+v+'】**。接下来**简历诊断、简历润色、AI 模拟面试、面试题库、求职提示**五项功能都会围绕这个岗位展开。点下面的按钮直接开始：',acts);
+  });
+
+  document.querySelectorAll('.nav-item').forEach(function(btn){btn.addEventListener('click',function(){switchMode(btn.getAttribute('data-mode'));});});
+
+  document.querySelectorAll('.pos-chip').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      state.position=btn.getAttribute('data-pos');
+      state.interview={phase:'ask',asked:0};
+      updateModeUI();
+      addMsg('assistant','已切换岗位方向为【'+state.position+'】。'+(state.mode==='interview'?' 点「开始模拟面试」即可按该方向出题。':(state.mode==='bank'?' 点「生成当前方向题库」查看题目与思路。':'')));
+    });
+  });
+
+  // 切换功能：不清空全局对话流，仅继续同一会话并追加一条轻提示
+  /* ---------- 首屏引导区（功能卡片） ---------- */
+  function heroPanelEl(){return $('heroPanel');}
+  function hideHero(){var h=heroPanelEl();if(h)h.classList.add('hide');}
+  function showHero(){var h=heroPanelEl();if(h)h.classList.remove('hide');}
+
+  function switchMode(mode){
+    if(!MODE_INFO[mode])return;
+    if(state.mode===mode)return;
+    state.mode=mode;
+    state.interview={phase:'ask',asked:0};
+    updateModeUI();
+    addMsg('assistant',WELCOME[mode].replace('{POS}',state.position));
+  }
+
+  $('resetBtn').addEventListener('click',function(){
+    state.history=[];messagesEl.innerHTML='';typingEl=null;
+    state.interview={phase:'ask',asked:0};state.lastResumeText='';
+    showHero();
+    addMsg('assistant',OPENING);
+  });
+
+  /* ---------- 设置 ---------- */
+  // 服务端 config.json 里配了 Key 就是最高优先级：强制使用真实大模型，
+  // 忽略 localStorage 可能残留的「本地引擎」偏好，并把探测做成 Promise 消除竞态。
+  function loadCfg(){
+    // 先读浏览器手动配置（作为无服务端配置时的备选）
+    try{
+      var c=JSON.parse(localStorage.getItem('aiJobAssistantCfg')||'null');
+      if(c&&c.baseUrl&&c.apiKey&&c.model){
+        state.cfg=c;
+        state.useLLM=localStorage.getItem('aiJobAssistantUseLLM')!=='0';
+      }
+    }catch(e){}
+
+    configPromise = (typeof fetch==='function'
+      ? fetch(API_BASE+'/api/config').then(function(r){return r.json();})
+      : Promise.resolve(null)
+    ).then(function(d){
+      if(d&&d.configured){
+        // 服务端已配置真实 Key → 无条件强制启用大模型
+        state.useServerConfig=true;
+        state.useLLM=true;
+        localStorage.setItem('aiJobAssistantUseLLM','1');
+        state.cfg={baseUrl:d.baseUrl,apiKey:'',model:d.model};
+        $('cfgBase').value=d.baseUrl||'';
+        $('cfgModel').value=d.model||'';
+        $('cfgKey').placeholder='已在本机服务端配置（无需填写）';
+      }
+      updateBadge();
+    }).catch(function(){});
+
+    $('cfgBase').value=state.cfg.baseUrl||'';$('cfgKey').value=state.cfg.apiKey||'';$('cfgModel').value=state.cfg.model||'';
+    updateBadge();
+  }
+
+  $('settingsBtn').addEventListener('click',function(){$('settingsMask').classList.add('show');});
+  $('closeSettingsBtn').addEventListener('click',function(){$('settingsMask').classList.remove('show');});
+  $('settingsMask').addEventListener('click',function(e){if(e.target===this)this.classList.remove('show');});
+  document.querySelectorAll('.preset').forEach(function(btn){btn.addEventListener('click',function(){var p=PRESETS[btn.getAttribute('data-preset')];if(!p)return;$('cfgBase').value=p.baseUrl;$('cfgModel').value=p.model;});});
+  $('saveCfgBtn').addEventListener('click',function(){
+    var cfg={baseUrl:$('cfgBase').value.trim(),apiKey:$('cfgKey').value.trim(),model:$('cfgModel').value.trim()};
+    if(!cfg.baseUrl||!cfg.apiKey||!cfg.model){alert('请填写完整的接口地址、API Key 和模型名。');return;}
+    state.cfg=cfg;state.useLLM=true;state.useServerConfig=false;
+    localStorage.setItem('aiJobAssistantCfg',JSON.stringify(cfg));localStorage.setItem('aiJobAssistantUseLLM','1');
+    updateBadge();
+    $('settingsMask').classList.remove('show');
+    addMsg('assistant','已启用大模型（'+cfg.model+'）。现在可以直接使用了，随便问点什么试试看。');
+  });
+  $('useLocalBtn').addEventListener('click',function(){
+    state.useLLM=false;state.useServerConfig=false;localStorage.setItem('aiJobAssistantUseLLM','0');
+    updateBadge();
+    $('settingsMask').classList.remove('show');
+    addMsg('assistant','已切换为本地规则引擎（仅本次会话生效，刷新后若服务端仍配置 Key 会自动恢复真实大模型）。');
+  });
+
+  /* ---------- 建议反馈：提交 + 建议墙 ---------- */
+  function fbSetMsg(text,type){
+    var el=$('fbMsg');el.textContent=text||'';
+    el.className='fb-msg'+(type?' '+type:'');
+  }
+  function fmtTime(t){
+    var d=new Date(t);
+    if(isNaN(d.getTime()))return '';
+    var p=function(n){return String(n).padStart(2,'0');};
+    return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes());
+  }
+  function renderWall(items){
+    var wall=$('fbWall');
+    $('fbCount').textContent=items.length?('共 '+items.length+' 条'):'';
+    if(!items.length){wall.innerHTML='<div class="wall-empty">还没有人提建议，来当第一个吧。</div>';return;}
+    wall.innerHTML=items.map(function(it){
+      var name=esc(it.user||'匿名用户');
+      var initial=name.slice(0,1);
+      return '<div class="wall-item">'+
+        '<div class="wall-item-top">'+
+          '<div class="wall-avatar">'+initial+'</div>'+
+          '<div class="wall-user">'+name+'</div>'+
+          '<div class="wall-time">'+esc(fmtTime(it.time))+'</div>'+
+        '</div>'+
+        '<div class="wall-text">'+esc(it.content)+'</div>'+
+      '</div>';
+    }).join('');
+  }
+  function loadFeedback(){
+    if(typeof fetch!=='function'){renderWall([]);return;}
+    fetch(API_BASE+'/api/feedback').then(function(r){return r.json();}).then(function(d){
+      renderWall(d&&d.ok&&Array.isArray(d.items)?d.items:[]);
+    }).catch(function(){renderWall([]);});
+  }
+  function loadStats(){
+    if(typeof fetch!=='function')return;
+    fetch(API_BASE+'/api/stats').then(function(r){return r.json();}).then(function(d){
+      if(d&&d.ok){
+        $('statVisitors').textContent=d.visitors||0;
+        $('statConv').textContent=d.conversations||0;
+        $('statFeedback').textContent=d.feedback||0;
+      }
+    }).catch(function(){});
+  }
+  function openFeedback(){
+    $('fbUser').value=currentUser()==='匿名用户'?'':currentUser();
+    fbSetMsg('');
+    $('fbMask').classList.add('show');
+    loadFeedback();
+    loadStats();
+  }
+  $('fbOpenBtn').addEventListener('click',openFeedback);
+  $('fbCloseBtn').addEventListener('click',function(){$('fbMask').classList.remove('show');});
+  $('fbMask').addEventListener('click',function(e){if(e.target===this)this.classList.remove('show');});
+  $('fbSubmitBtn').addEventListener('click',function(){
+    var user=$('fbUser').value.trim()||'匿名用户';
+    var content=$('fbContent').value.trim();
+    if(!content){fbSetMsg('请先写下你的建议内容。','err');return;}
+    if(typeof fetch!=='function'){fbSetMsg('当前环境不支持保存，请通过本地服务访问。','err');return;}
+    var btn=this;btn.disabled=true;
+    fbSetMsg('正在提交…');
+    fetch(API_BASE+'/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({user:user,content:content})
+    }).then(function(r){return r.json();}).then(function(d){
+      btn.disabled=false;
+      if(d&&d.ok){
+        try{localStorage.setItem('aiJobAssistantUser',user);}catch(e){}
+        $('fbContent').value='';
+        fbSetMsg('提交成功，谢谢你的建议！','ok');
+        loadFeedback();
+      }else{
+        fbSetMsg('提交失败：'+((d&&d.error)||'未知错误'),'err');
+      }
+    }).catch(function(e){
+      btn.disabled=false;
+      fbSetMsg('提交失败：'+(e&&e.message?e.message:'网络错误'),'err');
+    });
+  });
+
+  /* ---------- 管理员：口令验证后查看完整记录 ---------- */
+  $('adminViewBtn').addEventListener('click',function(){
+    var token=$('adminToken').value.trim();
+    var msg=$('adminMsg'), list=$('adminList');
+    if(!token){msg.textContent='请输入管理员口令。';msg.className='admin-msg err';return;}
+    if(typeof fetch!=='function'){msg.textContent='当前环境不支持读取记录。';msg.className='admin-msg err';return;}
+    msg.textContent='正在验证…';msg.className='admin-msg';
+    fetch(API_BASE+'/api/records?limit=100',{headers:{'X-Admin-Token':token}})
+      .then(function(r){return r.json().then(function(d){return {status:r.status,data:d};});})
+      .then(function(res){
+        if(!res.data||!res.data.ok){msg.textContent='口令不正确，无法查看记录。';msg.className='admin-msg err';list.classList.remove('show');return;}
+        var items=res.data.items||[];
+        msg.textContent='验证成功，共 '+res.data.count+' 条记录（显示最近 '+items.length+' 条）。';
+        msg.className='admin-msg ok';
+        if(!items.length){list.innerHTML='<div class="wall-empty">暂无记录</div>';}
+        else{
+          list.innerHTML=items.map(function(it){
+            var role=esc(it.role||'');
+            var who=esc(it.user||'匿名用户');
+            var t=esc(fmtTime(it.time));
+            var body=esc(String(it.content||'').slice(0,600));
+            return '<div class="admin-rec">'+
+              '<div class="admin-rec-head">'+
+                '<span class="admin-rec-role">'+(role==='user'?'用户':role==='assistant'?'AI':'系统')+'</span>'+
+                '<span class="admin-rec-meta">'+who+' · '+t+' · '+esc(it.mode||'')+'</span>'+
+              '</div><div class="admin-rec-body">'+body+'</div></div>';
+          }).join('');
+        }
+        list.classList.add('show');
+      })
+      .catch(function(e){msg.textContent='读取失败：'+(e&&e.message?e.message:'网络错误');msg.className='admin-msg err';});
+  });
+
+  /* ---------- 初始化：第一条回复为开场白（含伦理声明） ---------- */
+  loadCfg();
+  updateModeUI();
+
+  // 首屏功能卡片：点击直接切到对应功能并收起引导
+  document.querySelectorAll('[data-hero-mode]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var m=b.getAttribute('data-hero-mode');
+      if(state.mode===m){ addMsg('assistant',WELCOME[m].replace('{POS}',state.position)); }
+      else{ switchMode(m); }
+      hideHero();
+    });
+  });
+  var heroCloseBtn=$('heroClose');
+  if(heroCloseBtn)heroCloseBtn.addEventListener('click',hideHero);
+
+  addMsg('assistant',OPENING);
+})();
+</script>
+</body>
+</html>
