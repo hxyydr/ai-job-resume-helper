@@ -1366,6 +1366,25 @@
     n.textContent=msg||'';
     if(scrollEl)scrollEl.scrollTop=scrollEl.scrollHeight;
   }
+  // 等待期间给一句预期说明：模型生成要 15-40 秒，只有三点动画会让人以为又卡住了
+  var WAIT_HINT={
+    diagnose:'正在逐条分析简历，一般 10-30 秒…',
+    polish:'正在逐段润色，一般 20-40 秒…',
+    interview:'正在准备题目…',
+    bank:'正在生成题库，一般 10-20 秒…',
+    tips:'正在整理要点，一般 10-20 秒…'
+  };
+  var waitHintTimer=null, pendingHint='';
+  function startWaitHint(){
+    if(waitHintTimer){clearTimeout(waitHintTimer);waitHintTimer=null;}
+    var hint=pendingHint||WAIT_HINT[state.mode]||'正在生成…';
+    pendingHint='';
+    typingNote(hint);
+    waitHintTimer=setTimeout(function(){
+      if(typingEl)typingNote('内容较多，仍在生成中，请再稍候…');
+    },18000);
+  }
+  function stopWaitHint(){if(waitHintTimer){clearTimeout(waitHintTimer);waitHintTimer=null;}}
 
   function isRefusal(text){
     var t = String(text||'');
@@ -1724,6 +1743,7 @@
       else if(special==='genBank'||special==='customBank')userText='请生成【'+pos+'】方向的面试题库，列出5-8道常见题及简短答题思路。';
     }
     showTyping();
+    startWaitHint();
     var fallback=function(){
       if(special==='startInterview')return localInterview(null,true);
       if(special==='genBank')return localBank('');
@@ -1744,6 +1764,7 @@
       return new Promise(function(resolve){setTimeout(function(){resolve(fallback());},200);});
     });
     p.then(function(reply){
+      stopWaitHint();
       removeTyping();
       // 按任务类型保存结果，供对应的「下载」按钮使用（action 可能是数组）
       var tags=[];
@@ -1754,7 +1775,7 @@
       logRecord('assistant',reply);
       if(state.mode==='interview'&&state.interview.asked>0)state.interview.phase='review';
     })
-     .catch(function(e){removeTyping();addMsg('assistant','发生异常：'+(e&&e.message?e.message:String(e)));});
+     .catch(function(e){stopWaitHint();removeTyping();addMsg('assistant','发生异常：'+(e&&e.message?e.message:String(e)));});
   }
 
   function send(opts){
@@ -1776,10 +1797,12 @@
       state.lastResumeText=att.text;
       isResumeFlow=true;
       if(opts.fileTask==='summary'){
+        pendingHint='正在通读文档并整理要点，一般 15-30 秒…';
         effectiveText='请详细总结下面这份简历/文档的内容。要求：按板块梳理出关键信息（个人信息、求职意向、教育背景、经历、技能等），条理清晰、分点呈现；只总结原文已有的真实内容，不要编造，也不要给出修改建议。\n\n文档原文：\n'+att.text;
         displayText=displayText||('详细总结文档内容：'+att.name);
         // 不清除附件，方便继续润色；总结结果单独保存供下载
       }else if(opts.fileTask==='ppt'){
+        pendingHint='正在整理 PPT 大纲，一般 15-30 秒…';
         effectiveText='请把下面这份简历/文档整理成一份 PPT 汇报大纲。要求：按页组织，每页给出「第 N 页 · 页面标题」以及该页 2-4 条要点；结构包含封面、个人简介、教育背景、实践/项目经历、技能、求职意向、结尾致谢；只使用原文真实内容，不要编造。用 Markdown 的标题与列表输出。\n\n文档原文：\n'+att.text;
         displayText=displayText||('生成 PPT：'+att.name);
       }
