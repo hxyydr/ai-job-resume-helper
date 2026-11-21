@@ -502,15 +502,6 @@
   .admin-tab.active{background:var(--brand);border-color:var(--brand);color:#fff}
   .admin-tab b{font-weight:650;margin-left:2px}
   .admin-sp{flex:1;min-width:6px}
-  /* 【新增·独立】建议滚动墙样式：全部用 suggest-wall- 前缀，不覆盖任何现有规则 */
-  .suggest-wall{margin-top:10px;border-top:1px dashed var(--line);padding-top:9px}
-  .suggest-wall-title{font-size:11.5px;color:var(--muted);margin-bottom:7px}
-  .suggest-wall-list{max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:7px;padding-right:2px}
-  .suggest-wall-item{border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-size:12px;background:#fff}
-  .suggest-wall-item .sw-head{display:flex;gap:8px;align-items:center;margin-bottom:4px;flex-wrap:wrap}
-  .suggest-wall-item .sw-meta{color:var(--faint);font-size:11px}
-  .suggest-wall-item .sw-body{color:#274666;line-height:1.6;white-space:pre-wrap;word-break:break-word}
-  .suggest-wall-empty{color:var(--faint);font-size:12px;padding:8px 0}
   .mini-btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 9px;font-size:11.5px;cursor:pointer;color:var(--muted);font-family:inherit;transition:.15s}
   .mini-btn:hover{border-color:var(--brand);color:var(--brand)}
   .mini-btn:disabled{opacity:.55;cursor:default}
@@ -1108,11 +1099,6 @@
           <button class="mini-btn" id="adminReloadBtn">刷新</button>
           <button class="mini-btn" id="adminExportAllBtn">导出存档</button>
           <button class="mini-btn" id="adminExportBtn" title="把本机浏览器里保存的记录导出为 jsonl">导出本机记录</button>
-        </div>
-        <!-- 【新增·独立】全部建议滚动墙：仅展示，不影响原建议列表/删除/导出/其他模块 -->
-        <div class="suggest-wall" id="suggestWall" style="display:none">
-          <div class="suggest-wall-title">全部建议（可上下滑动查看）</div>
-          <div class="suggest-wall-list" id="suggestWallList"></div>
         </div>
         <div class="admin-list show" id="adminList"></div>
       </div>
@@ -2362,39 +2348,6 @@
     adminState.token=t;
     var inp=$('adminToken');
     if(inp)inp.value=t;
-  })();
-
-  /* ===== 【新增·独立】全部建议滚动墙：不改原列表/删除/导出/统计/其他模块 =====
-     只做一件事：管理员面板显示时，另取一份建议渲染到独立容器，正文完整不截断、可上下滑动。 */
-  (function suggestWall(){
-    var wall=$('suggestWall'), list=$('suggestWallList');
-    if(!wall||!list)return;
-    var loaded=false;
-    function token(){try{return localStorage.getItem(ADMIN_KEY)||'';}catch(e){return '';}}
-    function render(items){
-      if(!items||!items.length){list.innerHTML='<div class="suggest-wall-empty">还没有建议。</div>';return;}
-      list.innerHTML=items.map(function(it){
-        var name=esc(it.user||'匿名用户');
-        return '<div class="suggest-wall-item">'+
-          '<div class="sw-head"><span class="sw-meta">'+name+' · '+esc(fmtTime(it.time))+'</span></div>'+
-          '<div class="sw-body">'+esc(String(it.content||''))+'</div></div>';
-      }).join('');
-    }
-    function load(){
-      var t=token(); if(!t)return;
-      fetch(API_BASE+'/api/feedback?limit=1000',{
-        headers:{'X-Admin-Token':t,'Content-Type':'application/json'}
-      }).then(function(r){return r.json();}).then(function(d){
-        if(d&&d.ok){wall.style.display='';render(d.items||[]);loaded=true;}
-      }).catch(function(){});
-    }
-    // 面板一旦显示就加载一次；重复显示不再重复请求（导出/删除逻辑完全不参与）
-    var panel=$('adminPanel');
-    if(panel&&window.MutationObserver){
-      new MutationObserver(function(){
-        if(panel.classList.contains('show')){wall.style.display='';if(!loaded)load();}
-      }).observe(panel,{attributes:true,attributeFilter:['class']});
-    }
   })();
 
   /* ---------- 初始化：第一条回复为开场白（含伦理声明） ---------- */
