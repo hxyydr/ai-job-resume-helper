@@ -737,6 +737,15 @@
     box-shadow:0 1px 2px rgba(16,24,40,.03),0 10px 30px rgba(20,60,120,.07);
     padding:16px 12px 14px;
   }
+  /* 侧栏是固定高度的纵向 flex 容器：内容超出时交给 overflow 滚动，
+     禁止 flex-shrink 压缩子项——否则卡片被压扁、文字上下被 overflow:hidden 裁切 */
+  .sidebar > *{flex:0 0 auto;min-height:0}
+  /* 内容高于侧栏时露出细滚动条，提示下面还有内容（自定义岗位等） */
+  .sidebar{scrollbar-width:thin;scrollbar-color:#C4DAF3 transparent}
+  .sidebar::-webkit-scrollbar{width:6px}
+  .sidebar::-webkit-scrollbar-track{background:transparent}
+  .sidebar::-webkit-scrollbar-thumb{background:#C9DDF5;border-radius:3px}
+  .sidebar::-webkit-scrollbar-thumb:hover{background:#A9CDFF}
   .side-label{
     font-size:10px;letter-spacing:.16em;color:#93A9C4;
     padding:4px 12px 9px;
