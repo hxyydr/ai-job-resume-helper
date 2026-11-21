@@ -615,53 +615,6 @@
     opacity:0;transition:.25s;
   }
   .composer-box:focus-within::before{opacity:.9}
-
-  /* ===== 首屏欢迎区：功能卡片 ===== */
-  .hero{
-    position:relative;margin:2px 0 16px;padding:20px 22px 18px;
-    border-radius:18px;overflow:hidden;flex:0 0 auto;
-    background:
-      radial-gradient(620px 220px at 12% -30%,rgba(43,127,255,.13),transparent 65%),
-      radial-gradient(520px 200px at 96% 125%,rgba(56,189,248,.10),transparent 60%),
-      linear-gradient(160deg,#FFFFFF 0%,#F8FCFF 58%,#EAF6FF 100%);
-    border:1px solid #D8E8FF;
-    box-shadow:0 10px 30px rgba(40,34,90,.07),0 1px 2px rgba(40,34,90,.04);
-    transition:opacity .25s ease,transform .25s ease,max-height .3s ease,margin .3s ease,padding .3s ease;
-  }
-  .hero.hide{
-    opacity:0;transform:translateY(-10px);max-height:0;
-    padding-top:0;padding-bottom:0;margin-bottom:0;border-width:0;
-    pointer-events:none;
-  }
-  .hero-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
-  .hero-eyebrow{
-    display:inline-flex;align-items:center;gap:6px;
-    font-size:10.5px;font-weight:750;letter-spacing:.5px;color:var(--brand);
-    background:rgba(234,244,255,.92);border:1px solid #CBE0FF;
-    padding:3px 9px;border-radius:999px;margin-bottom:8px;
-  }
-  .hero-title{
-    margin:0 0 3px;font-size:19px;font-weight:800;letter-spacing:-.2px;line-height:1.35;
-    background:linear-gradient(100deg,#0B3A72,#1B6FE8 55%,#12A9E8);
-    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-  }
-  .hero-sub{margin:0;font-size:12px;color:var(--muted);line-height:1.6}
-  .hero-close{
-    flex:0 0 auto;border:none;background:rgba(234,244,255,.8);color:#8E98AE;
-    width:26px;height:26px;border-radius:8px;cursor:pointer;font-size:14px;line-height:1;
-    transition:.18s;font-family:inherit;
-  }
-  .hero-close:hover{background:#D6E7FF;color:var(--brand)}
-  .hero-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
-  .hero-card{
-    position:relative;text-align:left;cursor:pointer;font-family:inherit;
-    border:1px solid #DDEAFA;border-radius:13px;background:#fff;
-    padding:12px 12px 11px;display:flex;flex-direction:column;
-    transition:transform .18s,box-shadow .18s,border-color .18s;
-    box-shadow:0 2px 6px rgba(30,41,80,.04);overflow:hidden;
-  }
-  .hero-card:hover{transform:translateY(-3px);border-color:#A9CDFF;box-shadow:0 12px 26px rgba(43,127,255,.16)}
-  .hero-card:active{transform:translateY(-1px)}
   .hc-ico{
     width:32px;height:32px;border-radius:9px;margin-bottom:7px;
     display:inline-flex;align-items:center;justify-content:center;font-size:16px;
@@ -670,21 +623,6 @@
   .hc-title{font-size:13px;font-weight:750;color:var(--ink);line-height:1.4}
   .hc-desc{font-size:11px;line-height:1.55;color:var(--muted);margin-top:2px;flex:1}
   .hc-go{margin-top:7px;font-size:11px;font-weight:750;color:#98A2B8;transition:.18s}
-  .hero-card:hover .hc-go{color:var(--brand)}
-  .hero-card.primary{
-    background:linear-gradient(150deg,#2B7FFF 0%,#1B8FE0 55%,#12A9E8 100%);
-    border-color:transparent;box-shadow:0 10px 24px rgba(43,127,255,.30);
-  }
-  .hero-card.primary .hc-title{color:#fff}
-  .hero-card.primary .hc-desc{color:rgba(255,255,255,.84)}
-  .hero-card.primary .hc-go{color:rgba(255,255,255,.9)}
-  .hero-card.primary:hover{box-shadow:0 16px 34px rgba(43,127,255,.38)}
-  .hero-card.primary .hc-ico{background:rgba(255,255,255,.18)!important;box-shadow:none}
-  .hero-foot{
-    margin-top:12px;display:flex;align-items:center;gap:7px;
-    font-size:11px;color:var(--faint);line-height:1.5;
-  }
-  .hero-foot b{color:var(--brand);font-weight:750}
 
   @media (max-width:820px){
     .topbar{padding:0 14px;height:60px}
@@ -706,12 +644,7 @@
     .bubble{font-size:13px;padding:11px 13px}
     .ethics-card{font-size:11px;padding:9px 11px}
     .composer-box{padding:12px}
-    .hero{padding:15px 13px 13px;border-radius:15px}
-    .hero-title{font-size:16.5px}
-    .hero-sub{font-size:11.5px}
-    .hero-grid{grid-template-columns:repeat(2,1fr);gap:8px}
     .hc-desc{display:none}
-    .hero-foot{display:none}
   }
   /* ============================================================
      浅蓝「图纸」设计层 —— 覆盖前序样式，统一视觉语言
@@ -913,56 +846,6 @@
   }
   .msg:not(.user) .avatar::after{display:none}
   .msg.user .avatar{background:linear-gradient(135deg,#8FB4DC,#5E8CB8);box-shadow:0 4px 12px rgba(94,140,184,.24)}
-
-  /* 首屏引导：横版紧凑「起飞台」，随对话滚动滑走 */
-  .hero{
-    flex:0 0 auto;
-    min-height:0;
-    max-height:none;
-    overflow:hidden;
-    display:grid;grid-template-columns:minmax(140px,.9fr) minmax(0,1.6fr);
-    gap:16px 20px;align-items:center;
-    margin:0 0 4px;padding:16px 18px;
-    border-radius:16px;
-    background:
-      radial-gradient(420px 180px at 0% 0%,rgba(43,127,255,.10),transparent 70%),
-      linear-gradient(150deg,#F6FBFF 0%,#EFF8FF 60%,#EAF5FF 100%);
-    border:1px dashed #BCD9FA;
-    box-shadow:none;
-  }
-  .hero.hide{
-    max-height:0;padding-top:0;padding-bottom:0;margin-bottom:0;border-width:0;
-    opacity:0;transform:none;pointer-events:none;
-  }
-  .hero-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin:0}
-  .hero-head>div{min-width:0}
-  .hero-eyebrow{
-    font-size:10px;letter-spacing:.08em;color:#1257C4;font-weight:750;
-    background:#fff;border:1px solid #D6E7FF;border-radius:999px;padding:3px 9px;
-  }
-  .hero-title{
-    font-size:17px;line-height:1.35;margin:7px 0 4px;letter-spacing:-.2px;
-    background:linear-gradient(96deg,#0B3A72,#1B6FE8 70%,#12A9E8);
-    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-  }
-  .hero-sub{font-size:11.5px;color:#6A84A6;line-height:1.6;margin:0}
-  .hero-close{
-    width:24px;height:24px;border-radius:8px;background:#fff;border:1px solid #DCEBFF;
-    color:#8AA4C2;font-size:13px;
-  }
-  .hero-close:hover{background:#EAF4FF;color:#1257C4}
-  .hero-grid{
-    display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;
-    align-content:center;min-width:0;
-  }
-  .hero-card{
-    width:auto;min-width:0;padding:9px 10px;border-radius:12px;
-    border:1px solid #DCEBFF;background:#fff;
-    display:grid;grid-template-columns:26px 1fr;grid-template-rows:auto auto;
-    column-gap:8px;row-gap:1px;align-items:center;
-    box-shadow:0 2px 6px rgba(20,60,120,.04);
-  }
-  .hero-card:hover{border-color:#9CCBFF;box-shadow:0 10px 22px rgba(43,127,255,.16);transform:translateY(-2px)}
   .hc-ico{
     grid-row:1 / span 2;width:26px;height:26px;border-radius:8px;margin:0;
     font-size:13px;background:#EFF7FF!important;box-shadow:inset 0 0 0 1px rgba(43,127,255,.1);
@@ -972,20 +855,6 @@
   .hc-go{
     grid-column:2;margin:0;font-size:10.5px;font-weight:650;color:#9BB1CB;
   }
-  .hero-card:hover .hc-go{color:#2B7FFF}
-  .hero-card.primary{
-    background:linear-gradient(140deg,#2B7FFF 0%,#1590E4 60%,#12A9E8 100%);
-    border-color:transparent;box-shadow:0 10px 24px rgba(43,127,255,.28);
-  }
-  .hero-card.primary .hc-title{color:#fff}
-  .hero-card.primary .hc-go{color:rgba(255,255,255,.85)}
-  .hero-card.primary .hc-ico{background:rgba(255,255,255,.2)!important;box-shadow:none}
-  .hero-card.primary:hover{box-shadow:0 16px 32px rgba(43,127,255,.34)}
-  .hero-foot{
-    grid-column:1 / -1;margin:0;padding-top:9px;border-top:1px dashed #D3E5FA;
-    font-size:10.5px;color:#93A9C4;
-  }
-  .hero-foot b{color:#1257C4}
 
   /* 输入区：白底蓝边，发送键做蓝色胶囊 + 箭头 */
   .composer{padding-top:10px}
@@ -1058,14 +927,6 @@
     .sidebar .pos-now,.sidebar .side-stats{display:none}
     .nav-item.active{box-shadow:0 4px 12px rgba(43,127,255,.24)}
     .main-card{padding:13px 12px 12px;border-radius:17px}
-    .hero{
-      grid-template-columns:1fr;gap:9px;padding:12px;
-    }
-    .hero-title{font-size:15.5px}
-    .hero-sub{display:none}
-    .hero-grid{grid-template-columns:repeat(2,1fr)}
-    .hero-card{width:auto}
-    .hero-foot{display:none}
     .chat-head span{display:none}
     .pos-tag{display:none}
     .composer-box{padding:11px}
@@ -2381,18 +2242,6 @@
   /* ---------- 初始化：第一条回复为开场白（含伦理声明） ---------- */
   loadCfg();
   updateModeUI();
-
-  // 首屏功能卡片：点击直接切到对应功能并收起引导
-  document.querySelectorAll('[data-hero-mode]').forEach(function(b){
-    b.addEventListener('click',function(){
-      var m=b.getAttribute('data-hero-mode');
-      if(state.mode===m){ addMsg('assistant',WELCOME[m].replace('{POS}',state.position)); }
-      else{ switchMode(m); }
-      hideHero();
-    });
-  });
-  var heroCloseBtn=$('heroClose');
-  if(heroCloseBtn)heroCloseBtn.addEventListener('click',hideHero);
 
   addMsg('assistant',OPENING);
 })();
