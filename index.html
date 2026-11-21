@@ -1605,7 +1605,7 @@
     return common.concat(byMode[state.mode] || [], tail).join('\n');
   }
 
-  // 后端单次请求上限约 8.5 秒（平台同步函数限制），长回答容易超时。
+  // 后端已迁到 CloudBase（函数上限 120 秒，服务端放宽到 40 秒）；重试与分段仍保留，用于网络抖动时兜底。
   // 策略：①单次失败自动重试；②润色这类长回答改为「逐段处理」，每段都能在时限内返回。
   var LLM_MAX_TRIES = 3;
   function llmOnce(payload){
