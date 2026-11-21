@@ -923,7 +923,18 @@
   @media (max-width:820px){
     .topbar{height:58px;padding:0 12px}
     .workspace{padding:0 9px 9px}
-    .sidebar{padding:9px 10px;border-radius:15px;background:rgba(255,255,255,.9)}
+    /* 窄屏必须把桌面端的固定宽高收回：.sidebar 后面还有一条 width:228px 的设计层样式，
+       不在这里显式覆盖就会被盖掉，手机上只塞得下两个入口、其余功能滚出可视区 */
+    .sidebar{
+      width:100%;flex:0 0 auto;height:auto;
+      padding:9px 10px;border-radius:15px;background:rgba(255,255,255,.9);
+      display:flex;flex-direction:row;flex-wrap:wrap;align-items:center;
+      gap:6px;overflow:visible;
+    }
+    .sidebar .nav-item,.sidebar .pos-chip{width:auto;flex:0 0 auto;margin:0;padding:8px 11px;font-size:12px}
+    /* 岗位标签与功能入口同排时容易混淆：给它淡底+浅边，和带图标的白色功能卡区分开 */
+    .sidebar .pos-chip{background:#EEF4FB;border:1px solid #DDE9F6;border-radius:10px;color:#5B7699}
+    .sidebar .pos-chip.active{background:#2B7FFF;border-color:#2B7FFF;color:#fff}
     .sidebar .pos-now,.sidebar .side-stats{display:none}
     .nav-item.active{box-shadow:0 4px 12px rgba(43,127,255,.24)}
     .main-card{padding:13px 12px 12px;border-radius:17px}
