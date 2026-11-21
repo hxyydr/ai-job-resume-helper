@@ -1424,7 +1424,8 @@
       diagnose: [
         '',
         '【当前任务：简历诊断】',
-        '逐条指出问题并给修改建议，每条严格为「问题 → 修改建议」，引用原文词句、具体不空泛；按「个人信息 / 教育背景 / 实践与项目经历 / 技能 / 岗位匹配度」板块组织，最后给一句整体判断。'
+        '逐条指出问题并给修改建议，每条严格为「问题 → 修改建议」，引用原文词句、具体不空泛；按「个人信息 / 教育背景 / 实践与项目经历 / 技能 / 岗位匹配度」板块组织，最后给一句整体判断。',
+        '【篇幅铁律】每个板块最多 2 条、只挑最要紧的说，全文控制在 700 字以内；输出越长用户等得越久，宁精不滥。'
       ],
       polish: [
         '',
@@ -1471,7 +1472,7 @@
   var LLM_MAX_TRIES = 3;
   function llmOnce(payload){
     var ctrl=null,timer=null;
-    try{ctrl=new AbortController();timer=setTimeout(function(){ctrl.abort();},75000);}catch(e){}
+    try{ctrl=new AbortController();timer=setTimeout(function(){ctrl.abort();},105000);}catch(e){}
     var opts={method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)};
     if(ctrl)opts.signal=ctrl.signal;
     return fetch(API_BASE+'/api/chat',opts)
