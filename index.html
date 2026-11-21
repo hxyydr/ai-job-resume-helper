@@ -490,6 +490,22 @@
   .admin-rec-role{font-weight:650;color:var(--brand)}
   .admin-rec-meta{color:var(--faint);font-size:11px}
   .admin-rec-body{color:#274666;line-height:1.6;white-space:pre-wrap;word-break:break-word;max-height:120px;overflow:hidden}
+  .admin-panel{display:none;flex-direction:column;gap:9px}
+  .admin-panel.show{display:flex}
+  .admin-stats{display:flex;flex-wrap:wrap;gap:7px;font-size:11.5px;color:var(--muted)}
+  .admin-stats span{background:#EFF6FF;border:1px solid #DCEBFF;border-radius:8px;padding:5px 9px;white-space:nowrap}
+  .admin-stats b{color:var(--brand);font-size:13px;margin-right:3px}
+  .admin-toolbar{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .admin-tab{border:1px solid var(--line);background:#fff;border-radius:9px;padding:6px 11px;font-size:12px;cursor:pointer;color:var(--muted);font-family:inherit;transition:.15s}
+  .admin-tab.active{background:var(--brand);border-color:var(--brand);color:#fff}
+  .admin-tab b{font-weight:650;margin-left:2px}
+  .admin-sp{flex:1;min-width:6px}
+  .mini-btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 9px;font-size:11.5px;cursor:pointer;color:var(--muted);font-family:inherit;transition:.15s}
+  .mini-btn:hover{border-color:var(--brand);color:var(--brand)}
+  .mini-btn:disabled{opacity:.55;cursor:default}
+  .del-btn{margin-left:auto;border:1px solid #F5CFCB;background:#FFF6F5;color:#C0392B;border-radius:7px;padding:3px 9px;font-size:11px;cursor:pointer;font-family:inherit}
+  .del-btn:hover{background:#FDECEA}
+  .del-btn:disabled{opacity:.5;cursor:default}
 
   ::-webkit-scrollbar{width:9px;height:9px}
   ::-webkit-scrollbar-thumb{background:#C6D9EE;border-radius:9px;border:2px solid transparent;background-clip:padding-box}
@@ -1195,15 +1211,25 @@
       <button class="btn primary" id="saveCfgBtn">保存并启用大模型</button>
     </div>
     <div class="admin-box">
-      <h3>管理员 · 查看使用记录</h3>
-      <p class="admin-desc">对话记录含简历原文，仅凭管理员口令可见；普通访客只能看到使用统计数字。口令在本机 config.json 的 adminToken 字段。</p>
+      <h3>管理员控制台</h3>
+      <p class="admin-desc">输入口令后可查看并管理：<b>所有用户提交的建议（可逐条删除）</b>、全部对话记录、使用统计。普通访客看不到这些内容，只能提交建议。</p>
       <div class="admin-row">
         <input type="password" id="adminToken" placeholder="输入管理员口令">
-        <button class="btn primary" id="adminViewBtn">查看</button>
-        <button class="btn" id="adminExportBtn" title="把本机浏览器里保存的记录导出为 jsonl 文件">导出本机记录</button>
+        <button class="btn primary" id="adminViewBtn">登录</button>
       </div>
       <p class="admin-msg" id="adminMsg"></p>
-      <div class="admin-list" id="adminList"></div>
+      <div class="admin-panel" id="adminPanel">
+        <div class="admin-stats" id="adminStats"></div>
+        <div class="admin-toolbar">
+          <button class="admin-tab active" data-tab="fb" id="tabFbBtn">建议 <b id="tabFbCount">0</b></button>
+          <button class="admin-tab" data-tab="rec" id="tabRecBtn">对话记录 <b id="tabRecCount">0</b></button>
+          <span class="admin-sp"></span>
+          <button class="mini-btn" id="adminReloadBtn">刷新</button>
+          <button class="mini-btn" id="adminExportAllBtn">导出存档</button>
+          <button class="mini-btn" id="adminExportBtn" title="把本机浏览器里保存的记录导出为 jsonl">导出本机记录</button>
+        </div>
+        <div class="admin-list show" id="adminList"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -1212,12 +1238,7 @@
 <div class="mask" id="fbMask">
   <div class="modal">
     <h2>建议反馈</h2>
-    <p class="sub">建议会立刻保存在你这台电脑的浏览器里，并显示在下方建议墙（不会丢失）。<b>在线版没有服务器写入权限</b>，如需落成文件「对话记录与建议/建议/feedback.json」，请双击项目里的「本地预览-双击启动.bat」用本机模式提交。历史使用记录仅管理员可见。</p>
-    <div class="stats-strip" id="statsStrip">
-      <div class="stats-item"><span class="stats-num" id="statVisitors">—</span><span class="stats-label">位用户用过</span></div>
-      <div class="stats-item"><span class="stats-num" id="statConv">—</span><span class="stats-label">次提问</span></div>
-      <div class="stats-item"><span class="stats-num" id="statFeedback">—</span><span class="stats-label">条建议</span></div>
-    </div>
+    <p class="sub">建议会直接提交到服务器长期保存，<b>只有管理员能看到内容</b>；其他访客打开这个页面看不到任何人的建议。想留联系方式（可选）可写在内容末尾。</p>
     <div class="fb-nickname-row">
       <label for="fbUser">你的称呼</label>
       <input id="fbUser" placeholder="例如：小王 / 计科2301班" maxlength="60">
@@ -1228,8 +1249,6 @@
       <button class="btn" id="fbCloseBtn">关闭</button>
       <button class="btn primary" id="fbSubmitBtn">提交建议</button>
     </div>
-    <div class="wall-head"><b>大家的建议</b><span id="fbCount"></span></div>
-    <div class="wall" id="fbWall"></div>
   </div>
 </div>
 
@@ -1237,12 +1256,22 @@
 (function () {
   'use strict';
 
-  /* API 基址：同源优先；若前端被托管到其他静态平台，则复用现有后端（已开放 CORS） */
+  /* API 基址：同源优先；前端托管在 GitHub Pages 时统一走腾讯云后端
+     （云函数 + 云数据库：对话记录与建议永久保存、120 秒超时、已开放 CORS） */
+  var CLOUD_API = 'https://resume-d0g5zb07fe958c94d-1516871507.ap-shanghai.app.tcloudbase.com';
   var API_BASE = (function(){
     var h = location.hostname;
     if (!h || h === 'localhost' || h === '127.0.0.1') return '';
-    if (/(^|\.)netlify\.app$/.test(h)) return '';
-    return 'https://ai-job-resume-helper.netlify.app';
+    if (/tcloudbase\.com$/.test(h)) return '';
+    return CLOUD_API;
+  })();
+
+  /* 本机浏览器会话 ID：用于统计「位用户用过」，不含任何隐私信息 */
+  var SID = (function(){
+    var k='aiJobAssistantSid',v='';
+    try{v=localStorage.getItem(k)||'';}catch(e){}
+    if(!v){v='s'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);try{localStorage.setItem(k,v);}catch(e){}}
+    return v;
   })();
 
   var ETHICS = '本智能体仅作求职辅助，简历与面试内容以个人思考为主，请勿直接复制AI生成内容投递简历。若所用平台看不到访问数据，须提前向任课教师报备，改用问卷星统计体验人数。';
@@ -1363,7 +1392,7 @@
     }catch(e){}
   }
   function logRecord(role,content){
-    var rec={time:new Date().toISOString(),user:currentUser(),mode:state.mode,role:role,content:String(content||'').slice(0,20000)};
+    var rec={time:new Date().toISOString(),session:SID,user:currentUser(),mode:state.mode,role:role,content:String(content||'').slice(0,20000)};
     saveLocalRecord(rec);
     if(typeof fetch!=='function')return;
     try{
@@ -2166,171 +2195,188 @@
     var p=function(n){return String(n).padStart(2,'0');};
     return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes());
   }
-  function renderWall(items){
-    var wall=$('fbWall');
-    $('fbCount').textContent=items.length?('共 '+items.length+' 条'):'';
-    if(!items.length){wall.innerHTML='<div class="wall-empty">还没有人提建议，来当第一个吧。</div>';return;}
-    wall.innerHTML=items.map(function(it){
-      var name=esc(it.user||'匿名用户');
-      var initial=name.slice(0,1);
-      return '<div class="wall-item">'+
-        '<div class="wall-item-top">'+
-          '<div class="wall-avatar">'+initial+'</div>'+
-          '<div class="wall-user">'+name+'</div>'+
-          '<div class="wall-time">'+esc(fmtTime(it.time))+'</div>'+
-        '</div>'+
-        '<div class="wall-text">'+esc(it.content)+'</div>'+
-      '</div>';
-    }).join('');
-  }
-  /* 在线版是静态托管，服务器文件系统只读（写文件夹会报 ENOENT），
-     所以建议一律先存浏览器本地，能连上后端时再同步到公共建议墙。 */
-  var FB_LOCAL_KEY = 'aiJobAssistantFeedbackLocal';
-  function localFeedback(){
-    try{var a=JSON.parse(localStorage.getItem(FB_LOCAL_KEY)||'[]');return Array.isArray(a)?a:[];}catch(e){return [];}
-  }
-  function saveLocalFeedback(it){
-    try{
-      var a=localFeedback();
-      a.push(it);
-      if(a.length>300)a=a.slice(-300);
-      localStorage.setItem(FB_LOCAL_KEY,JSON.stringify(a));
-    }catch(e){}
-  }
-  function loadFeedback(){
-    var local=localFeedback();
-    function merge(server){
-      var seen={},all=[];
-      (server||[]).concat(local).forEach(function(it){
-        if(!it||!it.content)return;
-        var k=String(it.time||'')+'|'+String(it.content||'');
-        if(seen[k])return;
-        seen[k]=1;all.push(it);
-      });
-      all.sort(function(a,b){return String(a.time||'').localeCompare(String(b.time||''));});
-      renderWall(all.reverse());
-      if($('statFeedback'))$('statFeedback').textContent=Math.max(all.length,local.length);
-    }
-    if(typeof fetch!=='function'){merge([]);return;}
-    fetch(API_BASE+'/api/feedback').then(function(r){return r.json();}).then(function(d){
-      merge(d&&d.ok&&Array.isArray(d.items)?d.items:[]);
-    }).catch(function(){merge([]);});
-  }
-  function loadStats(){
-    if(typeof fetch!=='function')return;
-    fetch(API_BASE+'/api/stats').then(function(r){return r.json();}).then(function(d){
-      if(d&&d.ok){
-        $('statVisitors').textContent=d.visitors||0;
-        $('statConv').textContent=d.conversations||0;
-        // 建议数取「服务端」与「本机浏览器」的较大值，避免在线版显示成 0 条
-        $('statFeedback').textContent=Math.max(Number(d.feedback||0),localFeedback().length);
-      }
-    }).catch(function(){});
-  }
+  /* ---------- 建议反馈：提交到服务器长期保存，只有管理员能看 ---------- */
   function openFeedback(){
     $('fbUser').value=currentUser()==='匿名用户'?'':currentUser();
     fbSetMsg('');
     $('fbMask').classList.add('show');
-    loadFeedback();
-    loadStats();
   }
   $('fbOpenBtn').addEventListener('click',openFeedback);
   $('fbCloseBtn').addEventListener('click',function(){$('fbMask').classList.remove('show');});
   $('fbMask').addEventListener('click',function(e){if(e.target===this)this.classList.remove('show');});
+
   $('fbSubmitBtn').addEventListener('click',function(){
     var user=$('fbUser').value.trim()||'匿名用户';
     var content=$('fbContent').value.trim();
     if(!content){fbSetMsg('请先写下你的建议内容。','err');return;}
     var btn=this;btn.disabled=true;
     try{localStorage.setItem('aiJobAssistantUser',user);}catch(e){}
-    // 先存本机，保证「一定不丢」；再尝试同步到公共服务端
     var item={id:Date.now()+'-'+Math.random().toString(36).slice(2,8),user:user,content:content,time:new Date().toISOString()};
-    saveLocalFeedback(item);
-    $('fbContent').value='';
-    function done(synced){
-      btn.disabled=false;
-      fbSetMsg(synced?'提交成功，谢谢你的建议！':'已保存到本机浏览器 ✅ 在线版没有服务器写入权限，所以暂时只能存在你这台电脑上（建议墙里已经能看到）。',synced?'ok':'ok');
-      loadFeedback();
-      loadStats();
-    }
-    if(typeof fetch!=='function'){done(false);return;}
     fbSetMsg('正在提交…');
-    fetch(API_BASE+'/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({user:user,content:content,id:item.id,time:item.time})
-    }).then(function(r){return r.json();}).then(function(d){
-      done(!!(d&&d.ok));
-    }).catch(function(){done(false);});
+    fetch(API_BASE+'/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(item)})
+      .then(function(r){return r.json();})
+      .then(function(d){
+        btn.disabled=false;
+        if(d&&d.ok){$('fbContent').value='';fbSetMsg('提交成功，谢谢你的建议！内容只有管理员能看到。','ok');}
+        else{fbSetMsg('提交失败：'+((d&&d.error)||'服务器未接受')+'，请稍后重试。','err');}
+      })
+      .catch(function(e){
+        btn.disabled=false;
+        fbSetMsg('提交失败：'+((e&&e.message)||'网络错误')+'，请检查网络后重试。','err');
+      });
   });
 
-  /* ---------- 管理员：把本机浏览器保存的记录导出为 .jsonl，可直接放进 对话记录与建议/对话记录 ---------- */
-  $('adminExportBtn').addEventListener('click',function(){
-    var all=localRecords();
-    var msg=$('adminMsg');
-    if(!all.length){if(msg){msg.textContent='本机暂无记录：先正常使用几次对话，再来导出。';msg.className='admin-msg err';}return;}
-    var byDay={};
-    all.forEach(function(r){
-      var d=String(r.time||'').slice(0,10)||'unknown';
-      (byDay[d]=byDay[d]||[]).push(JSON.stringify(r));
+  /* ---------- 管理员控制台：看建议（可删）/ 看对话记录 / 看统计 ---------- */
+  var ADMIN_KEY='aiJobAssistantAdminToken';
+  var adminState={token:'',tab:'fb',feedback:[],records:[]};
+
+  function adminMsg(t,cls){
+    var el=$('adminMsg');if(!el)return;
+    el.textContent=t||'';el.className='admin-msg'+(cls?' '+cls:'');
+  }
+  function adminReq(path,opts){
+    opts=opts||{};
+    opts.headers=Object.assign({'X-Admin-Token':adminState.token,'Content-Type':'application/json'},opts.headers||{});
+    return fetch(API_BASE+path,opts).then(function(r){
+      return r.json().then(function(d){d.__status=r.status;return d;});
     });
-    var text='',days=Object.keys(byDay).sort();
-    days.forEach(function(d){
-      if(days.length>1)text+='# '+d+'\n';
-      text+=byDay[d].join('\n')+'\n';
+  }
+  function renderAdminStats(s){
+    var el=$('adminStats');if(!el)return;
+    if(!s){el.innerHTML='';return;}
+    el.innerHTML=''+
+      '<span><b>'+(s.feedback||0)+'</b> 条建议</span>'+
+      '<span><b>'+(s.conversations||0)+'</b> 次提问</span>'+
+      '<span><b>'+(s.messages||0)+'</b> 条消息</span>'+
+      '<span><b>'+(s.visitors||0)+'</b> 位访客</span>'+
+      '<span><b>'+(s.days||0)+'</b> 天使用</span>';
+  }
+  function renderAdminList(){
+    var list=$('adminList');if(!list)return;
+    if($('tabFbCount'))$('tabFbCount').textContent=adminState.feedback.length;
+    if($('tabRecCount'))$('tabRecCount').textContent=adminState.records.length;
+    if(adminState.tab==='fb'){
+      if(!adminState.feedback.length){list.innerHTML='<div class="wall-empty">还没有人提建议。</div>';return;}
+      list.innerHTML=adminState.feedback.map(function(it){
+        var name=esc(it.user||'匿名用户');
+        return '<div class="admin-rec">'+
+          '<div class="admin-rec-head">'+
+            '<span class="admin-rec-role">'+esc(name.slice(0,1))+'</span>'+
+            '<span class="admin-rec-meta">'+name+' · '+esc(fmtTime(it.time))+'</span>'+
+            '<button class="del-btn" data-del="'+esc(it.id||'')+'">删除</button>'+
+          '</div><div class="admin-rec-body">'+esc(String(it.content||''))+'</div></div>';
+      }).join('');
+    }else{
+      if(!adminState.records.length){list.innerHTML='<div class="wall-empty">暂无对话记录。</div>';return;}
+      list.innerHTML=adminState.records.map(function(it){
+        var role=esc(it.role||'');
+        var who=esc(it.user||'匿名用户');
+        var body=esc(String(it.content||'').slice(0,600));
+        return '<div class="admin-rec">'+
+          '<div class="admin-rec-head">'+
+            '<span class="admin-rec-role">'+(role==='user'?'用户':role==='assistant'?'AI':'系统')+'</span>'+
+            '<span class="admin-rec-meta">'+who+' · '+esc(fmtTime(it.time))+' · '+esc(it.mode||'')+'</span>'+
+          '</div><div class="admin-rec-body">'+body+'</div></div>';
+      }).join('');
+    }
+  }
+  function loadAdminData(quiet){
+    if(!adminState.token)return;
+    if(!quiet)adminMsg('正在读取…');
+    Promise.all([
+      adminReq('/api/admin/check'),
+      adminReq('/api/feedback?limit=500'),
+      adminReq('/api/records?limit=300')
+    ]).then(function(res){
+      var check=res[0],fb=res[1],rec=res[2];
+      if(check.__status===401||check.__status===403){adminMsg('口令不正确，请重新输入。','err');return;}
+      renderAdminStats(check.stats);
+      adminState.feedback=(fb&&fb.items)||[];
+      adminState.records=(rec&&rec.items)||[];
+      if($('adminPanel'))$('adminPanel').classList.add('show');
+      renderAdminList();
+      adminMsg('已登录：共 '+(fb.count||0)+' 条建议 · '+(rec.count||0)+' 条消息记录。删除建议会立刻生效，其他访客看不到这些内容。','ok');
+    }).catch(function(e){
+      adminMsg('读取失败：'+((e&&e.message)||'网络错误'),'err');
     });
-    var blob=new Blob([text],{type:'application/x-ndjson;charset=utf-8'});
+  }
+  $('adminViewBtn').addEventListener('click',function(){
+    var t=$('adminToken').value.trim();
+    if(!t){adminMsg('请输入管理员口令。','err');return;}
+    adminState.token=t;
+    try{localStorage.setItem(ADMIN_KEY,t);}catch(e){}
+    loadAdminData();
+  });
+  $('adminToken').addEventListener('keydown',function(e){if(e.key==='Enter')$('adminViewBtn').click();});
+  $('tabFbBtn').addEventListener('click',function(){adminState.tab='fb';this.classList.add('active');$('tabRecBtn').classList.remove('active');renderAdminList();});
+  $('tabRecBtn').addEventListener('click',function(){adminState.tab='rec';this.classList.add('active');$('tabFbBtn').classList.remove('active');renderAdminList();});
+  $('adminReloadBtn').addEventListener('click',function(){loadAdminData();});
+  $('adminList').addEventListener('click',function(e){
+    var btn=(e.target&&e.target.closest)?e.target.closest('[data-del]'):null;
+    if(!btn)return;
+    var id=btn.getAttribute('data-del');
+    if(btn.getAttribute('data-sure')!=='1'){
+      btn.setAttribute('data-sure','1');
+      btn.textContent='再点一次确认';
+      setTimeout(function(){if(!btn.disabled){btn.removeAttribute('data-sure');btn.textContent='删除';}},4000);
+      return;
+    }
+    btn.disabled=true;
+    btn.textContent='删除中…';
+    adminReq('/api/admin/delete',{method:'POST',body:JSON.stringify({ids:[id]})}).then(function(d){
+      if(d&&d.ok){
+        adminState.feedback=adminState.feedback.filter(function(x){return String(x.id)!==String(id);});
+        renderAdminList();
+        adminMsg('已删除 '+(d.deleted||1)+' 条建议。','ok');
+      }else{
+        btn.disabled=false;
+        btn.textContent='删除';
+        adminMsg('删除失败：'+((d&&d.error)||'未知错误'),'err');
+      }
+    }).catch(function(err){btn.disabled=false;btn.textContent='删除';adminMsg('删除失败：'+((err&&err.message)||'网络错误'),'err');});
+  });
+
+  /* 导出：对话记录存 .jsonl，建议存 .json，可直接放进「对话记录与建议」文件夹 */
+  function downloadText(name,text,mime){
+    var blob=new Blob([text],{type:mime});
     var url=URL.createObjectURL(blob);
     var a=document.createElement('a');
-    a.href=url;a.download='对话记录-'+days[days.length-1]+'.jsonl';
+    a.href=url;a.download=name;
     document.body.appendChild(a);a.click();document.body.removeChild(a);
     setTimeout(function(){URL.revokeObjectURL(url);},1500);
-    if(msg){
-      msg.textContent='已导出 '+all.length+' 条记录。把下载的文件放进「对话记录与建议/对话记录」文件夹即可。';
-      msg.className='admin-msg ok';
-    }
+  }
+  $('adminExportAllBtn').addEventListener('click',function(){
+    if(!adminState.token){adminMsg('请先输入口令并登录。','err');return;}
+    adminMsg('正在导出…');
+    adminReq('/api/admin/export').then(function(d){
+      if(!d||!d.ok){adminMsg('导出失败：'+((d&&d.error)||'未知错误'),'err');return;}
+      var day=String(d.exportedAt||new Date().toISOString()).slice(0,10);
+      var recs=d.records||[],fbs=d.feedback||[];
+      var lines=recs.map(function(r){return JSON.stringify(r);}).join('\n');
+      downloadText('对话记录-'+day+'.jsonl',lines+'\n','application/x-ndjson;charset=utf-8');
+      setTimeout(function(){
+        downloadText('建议-'+day+'.json',JSON.stringify(fbs,null,2),'application/json;charset=utf-8');
+      },700);
+      adminMsg('已导出 '+recs.length+' 条记录、'+fbs.length+' 条建议（浏览器下载目录里）。','ok');
+    }).catch(function(e){adminMsg('导出失败：'+((e&&e.message)||'网络错误'),'err');});
+  });
+  $('adminExportBtn').addEventListener('click',function(){
+    var all=localRecords();
+    if(!all.length){adminMsg('本机浏览器里暂无记录。','err');return;}
+    downloadText('本机记录-'+new Date().toISOString().slice(0,10)+'.jsonl',
+      all.map(function(r){return JSON.stringify(r);}).join('\n')+'\n','application/x-ndjson;charset=utf-8');
+    adminMsg('已导出本机 '+all.length+' 条记录。','ok');
   });
 
-  /* ---------- 管理员：口令验证后查看完整记录 ---------- */
-  $('adminViewBtn').addEventListener('click',function(){
-    var token=$('adminToken').value.trim();
-    var msg=$('adminMsg'), list=$('adminList');
-    if(!token){msg.textContent='请输入管理员口令。';msg.className='admin-msg err';return;}
-    if(typeof fetch!=='function'){msg.textContent='当前环境不支持读取记录。';msg.className='admin-msg err';return;}
-    msg.textContent='正在验证…';msg.className='admin-msg';
-    fetch(API_BASE+'/api/records?limit=100',{headers:{'X-Admin-Token':token}})
-      .then(function(r){return r.json().then(function(d){return {status:r.status,data:d};});})
-      .then(function(res){
-        if(!res.data||!res.data.ok){msg.textContent='口令不正确，无法查看记录。';msg.className='admin-msg err';list.classList.remove('show');return;}
-        var items=(res.data.items||[]).slice();
-        var local=localRecords();
-        // 合并本机浏览器记录（在线版写不进服务器文件夹，记录只存在本机）
-        var seen={};
-        items.forEach(function(it){seen[String(it.time||'')+'|'+String(it.content||'').slice(0,60)]=1;});
-        local.forEach(function(it){
-          var k=String(it.time||'')+'|'+String(it.content||'').slice(0,60);
-          if(!seen[k]){seen[k]=1;items.push(it);}
-        });
-        items.sort(function(a,b){return String(a.time||'').localeCompare(String(b.time||''));});
-        items=items.slice(-100).reverse();
-        msg.textContent='验证成功：服务端 '+((res.data.count)||0)+' 条 · 本机 '+local.length+' 条，共显示 '+items.length+' 条（点右侧「导出本机记录」可存成文件）。';
-        msg.className='admin-msg ok';
-        if(!items.length){list.innerHTML='<div class="wall-empty">暂无记录</div>';}
-        else{
-          list.innerHTML=items.map(function(it){
-            var role=esc(it.role||'');
-            var who=esc(it.user||'匿名用户');
-            var t=esc(fmtTime(it.time));
-            var body=esc(String(it.content||'').slice(0,600));
-            return '<div class="admin-rec">'+
-              '<div class="admin-rec-head">'+
-                '<span class="admin-rec-role">'+(role==='user'?'用户':role==='assistant'?'AI':'系统')+'</span>'+
-                '<span class="admin-rec-meta">'+who+' · '+t+' · '+esc(it.mode||'')+'</span>'+
-              '</div><div class="admin-rec-body">'+body+'</div></div>';
-          }).join('');
-        }
-        list.classList.add('show');
-      })
-      .catch(function(e){msg.textContent='读取失败：'+(e&&e.message?e.message:'网络错误');msg.className='admin-msg err';});
-  });
+  /* 打开设置面板时，如果之前登录过就自动带出口令并刷新数据 */
+  (function initAdmin(){
+    var t='';
+    try{t=localStorage.getItem(ADMIN_KEY)||'';}catch(e){}
+    if(!t)return;
+    adminState.token=t;
+    var inp=$('adminToken');
+    if(inp)inp.value=t;
+  })();
 
   /* ---------- 初始化：第一条回复为开场白（含伦理声明） ---------- */
   loadCfg();
