@@ -1470,9 +1470,22 @@
   // 策略：①单次失败自动重试；②润色这类长回答改为「逐段处理」，每段都能在时限内返回。
   var LLM_MAX_TRIES = 3;
   function llmOnce(payload){
-    return fetch(API_BASE+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+    var ctrl=null,timer=null;
+    try{ctrl=new AbortController();timer=setTimeout(function(){ctrl.abort();},75000);}catch(e){}
+    var opts={method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)};
+    if(ctrl)opts.signal=ctrl.signal;
+    return fetch(API_BASE+'/api/chat',opts)
       .then(function(r){return r.json().then(function(d){return {ok:r.ok,data:d};});})
-      .then(function(res){if(!res.ok||!res.data||!res.data.content)throw new Error((res.data&&res.data.message)||'模型调用失败');return res.data.content;});
+      .then(function(res){
+        if(timer)clearTimeout(timer);
+        if(!res.ok||!res.data||!res.data.content)throw new Error((res.data&&res.data.message)||'模型调用失败');
+        return res.data.content;
+      })
+      .catch(function(e){
+        if(timer)clearTimeout(timer);
+        if(e&&e.name==='AbortError')throw new Error('模型响应超时');
+        throw e;
+      });
   }
   function llmRetry(system, messages){
     var payload = {system:system,messages:messages,config:state.useServerConfig?{}:state.cfg};
@@ -1484,7 +1497,7 @@
         // 超时 / 空返回 / 网络抖动 都属于可重试
         var retriable = /超时|TIMEOUT|为空|网络|Failed to fetch|NetworkError|502|503|504/i.test(m);
         if (retriable && tries < LLM_MAX_TRIES){
-          typingNote('网络有点慢，正在自动重试（第 '+tries+' 次）…');
+          typingNote('这次没返回，正在重试（第 '+tries+' 次）…');
           return new Promise(function(res){setTimeout(res, 400);}).then(run);
         }
         if (/超时|TIMEOUT/i.test(m)) throw new Error('模型连续 '+tries+' 次都没能在时限内返回。请稍等几秒再点一次；如果一直失败，可以把内容拆成更短的几段分别处理。');
@@ -2106,11 +2119,25 @@
     var el=$('adminStats');if(!el)return;
     if(!s){el.innerHTML='';return;}
     el.innerHTML=''+
-      '<span><b>'+(s.feedback||0)+'</b> 条建议</span>'+
-      '<span><b>'+(s.conversations||0)+'</b> 次提问</span>'+
-      '<span><b>'+(s.messages||0)+'</b> 条消息</span>'+
-      '<span><b>'+(s.visitors||0)+'</b> 位访客</span>'+
-      '<span><b>'+(s.days||0)+'</b> 天使用</span>';
+      '<span data-k="feedback"><b>'+(s.feedback||0)+'</b> 条建议</span>'+
+      '<span data-k="conversations"><b>'+(s.conversations||0)+'</b> 次提问</span>'+
+      '<span data-k="messages"><b>'+(s.messages||0)+'</b> 条消息</span>'+
+      '<span data-k="visitors"><b>'+(s.visitors||0)+'</b> 位访客</span>'+
+      '<span data-k="days"><b>'+(s.days||0)+'</b> 天使用</span>';
+  }
+  // 删除建议后先本地改数字（即时反馈），再向服务端要一次真实统计校正
+  function bumpAdminStat(key,delta){
+    var el=$('adminStats');if(!el)return;
+    var b=el.querySelector('[data-k="'+key+'"] b');if(!b)return;
+    var n=parseInt(b.textContent,10);
+    if(isNaN(n))return;
+    b.textContent=Math.max(0,n+delta);
+  }
+  function syncAdminStats(){
+    if(!adminState.token)return;
+    adminReq('/api/admin/check').then(function(d){
+      if(d&&d.stats)renderAdminStats(d.stats);
+    }).catch(function(){});
   }
   function renderAdminList(){
     var list=$('adminList');if(!list)return;
@@ -2186,9 +2213,12 @@
     btn.textContent='删除中…';
     adminReq('/api/admin/delete',{method:'POST',body:JSON.stringify({ids:[id]})}).then(function(d){
       if(d&&d.ok){
+        var n=(d.deleted||1);
         adminState.feedback=adminState.feedback.filter(function(x){return String(x.id)!==String(id);});
         renderAdminList();
-        adminMsg('已删除 '+(d.deleted||1)+' 条建议。','ok');
+        bumpAdminStat('feedback',-n);   // 上面那排统计立刻减掉，别让数字和列表打架
+        adminMsg('已删除 '+n+' 条建议。','ok');
+        syncAdminStats();               // 再与服务端核对一次
       }else{
         btn.disabled=false;
         btn.textContent='删除';
