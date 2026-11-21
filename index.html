@@ -1535,7 +1535,14 @@
     return chunks;
   }
   // 去掉每段回复开头自带的标题行，避免多段合并后一堆重复标题
-  function stripChunkHead(s){ return String(s||'').replace(/^\s*#{1,6}[^\n]*\n+/, '').replace(/^\s*【[^\n]{0,20}】\s*\n+/, ''); }
+  // 去掉每段回复开头自带的标题 / 岗位点名，避免多段合并后一堆重复开场白
+  function stripChunkHead(s){
+    return String(s||'')
+      .replace(/^\s*#{1,6}[^\n]*\n+/, '')
+      .replace(/^\s*【[^\n]{0,20}】\s*\n+/, '')
+      .replace(/^\s*针对【[^】]{1,24}】岗位[^\n]{0,30}\n+/, '')
+      .replace(/^\s*针对【[^】]{1,24}】岗位[，,：:]\s*/, '');
+  }
 
   /* 逐段润色：分段并发（最多 2 路），全部完成后再一次性显示，避免整份简历一次超时 */
   function polishChunked(text){
@@ -1551,7 +1558,7 @@
       note();
       return llmRetry(systemPrompt(), [{
         role:'user',
-        content:'请润色下面这段简历内容（这是整份简历的第 ' + (idx+1) + ' 段，共 ' + chunks.length + ' 段；只处理本段，不要提及其它段）：\n\n' + chunks[idx]
+        content:'请润色下面这段简历内容（这是整份简历的第 ' + (idx+1) + ' 段，共 ' + chunks.length + ' 段；只处理本段，不要提及其它段）。\n直接输出「原文：/润色后：/为什么改：」三行块，不要任何开场白、不要点名岗位、不要重复标题。\n\n' + chunks[idx]
       }]).then(function(r){
         out[idx] = idx === 0 ? r : stripChunkHead(r);
         done++; note();
