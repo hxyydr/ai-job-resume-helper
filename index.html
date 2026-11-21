@@ -1434,7 +1434,7 @@
         '每块只用三行纯文本标签（标签本身不加任何星号或加粗）：第一行「原文：」+ 改前原句；第二行「润色后：」+ 可直接替换原文那一整处的完整句子（不是片段、不用省略号）；第三行「为什么改：」+ 一句话理由。多块之间空一行。',
         '【个人信息铁律】姓名、手机号、邮箱、居住城市、个人网站/GitHub、求职意向、教育背景、公司名、职位名、时间日期等个人信息与客观事实，必须逐字原样保留，一个字都不能删改，也不能用【】替代；【】只允许用于原文缺失、需要本人补充的字段。',
         '【展示铁律】不要输出「【润色后简历正文】」「【改动说明】」这类标记，不要把标签写成加粗，不要在结尾拼接整份简历全文或追加「需要我…吗」这类收尾。',
-        '【篇幅铁律】最多只列 6 处最值得改的地方，每块三行都尽量短，全文控制在 900 字以内。宁少勿多，输出过长会导致响应超时失败。'
+        '【篇幅铁律】最多只列 4 处最值得改的地方，每块三行都尽量短，全文控制在 600 字以内。宁少勿多，输出过长会导致响应超时失败。'
       ],
       interview: [
         '',
@@ -1495,11 +1495,12 @@
       tries++;
       return llmOnce(payload).catch(function(err){
         var m = String((err && err.message) || '');
-        // 超时 / 空返回 / 网络抖动 都属于可重试
-        var retriable = /超时|TIMEOUT|为空|网络|Failed to fetch|NetworkError|502|503|504/i.test(m);
+        // 超时 / 空返回 / 网络抖动 / 限流 都属于可重试
+        var retriable = /超时|TIMEOUT|为空|网络|Failed to fetch|NetworkError|429|502|503|504|频繁|限流/i.test(m);
         if (retriable && tries < LLM_MAX_TRIES){
+          var wait = /429|频繁|限流/i.test(m) ? 1500*tries : 400;
           typingNote('这次没返回，正在重试（第 '+tries+' 次）…');
-          return new Promise(function(res){setTimeout(res, 400);}).then(run);
+          return new Promise(function(res){setTimeout(res, wait);}).then(run);
         }
         if (/超时|TIMEOUT/i.test(m)) throw new Error('模型连续 '+tries+' 次都没能在时限内返回。请稍等几秒再点一次；如果一直失败，可以把内容拆成更短的几段分别处理。');
         throw err;
@@ -1508,7 +1509,8 @@
     return run();
   }
 
-  /* 把长文本切成「约 340 字一段」，优先在空行（板块边界）切开，其次按行切 */
+  /* 把长文本切成「约 520 字一段」，优先在空行（板块边界）切开，其次按行切 */
+  var POLISH_CHUNK_MAX = 520;
   function splitForPolish(text){
     var raw = String(text||'').replace(/\r/g,'').trim();
     if(!raw) return [];
@@ -1516,17 +1518,17 @@
     raw.split(/\n{2,}/).forEach(function(p){
       p = p.trim();
       if(!p) return;
-      if(p.length <= 340){ blocks.push(p); return; }
+      if(p.length <= POLISH_CHUNK_MAX){ blocks.push(p); return; }
       var lines = p.split('\n'), cur = '';
       lines.forEach(function(ln){
-        if(cur && (cur+'\n'+ln).length > 340){ blocks.push(cur); cur = ln; }
+        if(cur && (cur+'\n'+ln).length > POLISH_CHUNK_MAX){ blocks.push(cur); cur = ln; }
         else { cur = cur ? cur+'\n'+ln : ln; }
       });
       if(cur) blocks.push(cur);
     });
     var chunks = [], buf = '';
     blocks.forEach(function(b){
-      if(buf && (buf+'\n\n'+b).length > 340){ chunks.push(buf); buf = b; }
+      if(buf && (buf+'\n\n'+b).length > POLISH_CHUNK_MAX){ chunks.push(buf); buf = b; }
       else { buf = buf ? buf+'\n\n'+b : b; }
     });
     if(buf) chunks.push(buf);
@@ -1535,27 +1537,33 @@
   // 去掉每段回复开头自带的标题行，避免多段合并后一堆重复标题
   function stripChunkHead(s){ return String(s||'').replace(/^\s*#{1,6}[^\n]*\n+/, '').replace(/^\s*【[^\n]{0,20}】\s*\n+/, ''); }
 
-  /* 逐段润色：每段单独请求，全部完成后再一次性显示，避免整份简历一次超时 */
+  /* 逐段润色：分段并发（最多 2 路），全部完成后再一次性显示，避免整份简历一次超时 */
   function polishChunked(text){
     var chunks = splitForPolish(text);
     if (chunks.length < 2) return llmRetry(systemPrompt(), [{role:'user',content:text}]);
-    var out = [], i = 0;
-    function step(){
-      if (i >= chunks.length) {
-        return Promise.resolve('### 逐段润色对照（共 ' + chunks.length + ' 段）\n\n' + out.join('\n\n'));
-      }
-      var idx = i++;
-      typingNote('简历较长，正在逐段润色：第 ' + (idx+1) + ' / ' + chunks.length + ' 段…');
+    var out = new Array(chunks.length), done = 0, next = 0;
+    function note(){
+      typingNote('简历较长，正在逐段润色：已完成 ' + done + ' / ' + chunks.length + ' 段…');
+    }
+    function worker(){
+      if (next >= chunks.length) return Promise.resolve();
+      var idx = next++;
+      note();
       return llmRetry(systemPrompt(), [{
         role:'user',
-        content:'请润色下面这段简历内容（这是整份简历的第 ' + (idx+1) + ' 段，只处理本段，不要提及其它段）：\n\n' + chunks[idx]
+        content:'请润色下面这段简历内容（这是整份简历的第 ' + (idx+1) + ' 段，共 ' + chunks.length + ' 段；只处理本段，不要提及其它段）：\n\n' + chunks[idx]
       }]).then(function(r){
-        if (idx === 0) out.push(r);
-        else out.push(stripChunkHead(r));
-        return step();
+        out[idx] = idx === 0 ? r : stripChunkHead(r);
+        done++; note();
+        return worker();
       });
     }
-    return step();
+    var lanes = [];
+    var width = Math.min(2, chunks.length);
+    for (var i = 0; i < width; i++) lanes.push(worker());
+    return Promise.all(lanes).then(function(){
+      return '### 逐段润色对照（共 ' + chunks.length + ' 段）\n\n' + out.join('\n\n');
+    });
   }
 
   function callLLM(userText){
