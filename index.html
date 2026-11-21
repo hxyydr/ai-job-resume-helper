@@ -1296,8 +1296,15 @@
     return out.join('');
   }
 
+  // 模型偶尔把整段回答用 ``` 代码块包住（尤其要求"大纲/列表"时），会整块渲染成等宽代码块
+  function stripFence(s){
+    var t=String(s==null?'':s);
+    var m=t.match(/^\s*```[a-zA-Z]*\r?\n([\s\S]*?)\r?\n?```\s*$/);
+    return m?m[1]:t;
+  }
   function addMsg(role, text, action, opts) {
     opts = opts||{};
+    if(role === 'assistant') text = stripFence(text);
     state.history.push({role:role,content:text});
     var div = document.createElement('div');
     div.className = 'msg ' + role;
@@ -1499,7 +1506,10 @@
       .then(function(res){
         if(timer)clearTimeout(timer);
         if(!res.ok||!res.data||!res.data.content)throw new Error((res.data&&res.data.message)||'模型调用失败');
-        return res.data.content;
+        var c=res.data.content;
+        // 后端告知被长度上限截断时，明确提示，别让用户以为这就是完整答案
+        if(res.data.truncated)c+='\n\n---\n（这段回答已达单次长度上限，后面可能没说完。可以让我「继续」，或把简历分成更短的几段再处理。）';
+        return c;
       })
       .catch(function(e){
         if(timer)clearTimeout(timer);
@@ -1803,7 +1813,7 @@
         // 不清除附件，方便继续润色；总结结果单独保存供下载
       }else if(opts.fileTask==='ppt'){
         pendingHint='正在整理 PPT 大纲，一般 15-30 秒…';
-        effectiveText='请把下面这份简历/文档整理成一份 PPT 汇报大纲。要求：按页组织，每页给出「第 N 页 · 页面标题」以及该页 2-4 条要点；结构包含封面、个人简介、教育背景、实践/项目经历、技能、求职意向、结尾致谢；只使用原文真实内容，不要编造。用 Markdown 的标题与列表输出。\n\n文档原文：\n'+att.text;
+        effectiveText='请把下面这份简历/文档整理成一份 PPT 汇报大纲。要求：按页组织，每页给出「第 N 页 · 页面标题」以及该页 2-4 条要点；结构包含封面、个人简介、教育背景、实践/项目经历、技能、求职意向、结尾致谢；只使用原文真实内容，不要编造。用 Markdown 的标题与列表输出，不要用 ``` 代码块包裹。\n\n文档原文：\n'+att.text;
         displayText=displayText||('生成 PPT：'+att.name);
       }
     }else if(state.mode==='diagnose'&&att){
