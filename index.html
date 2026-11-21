@@ -944,10 +944,8 @@
     .send-btn{padding:9px 16px}
   }
 </style>
-<!-- PDF / Word 简历解析（CDN，加载失败时仍可手动粘贴文本） -->
-<!-- 用相对路径，兼容部署在子目录（如 GitHub Pages 的 /ai-job-resume-helper/） -->
-<script src="vendor/pdf.min.js"></script>
-<script src="vendor/mammoth.browser.min.js"></script>
+<!-- PDF / Word 解析库改为「首次上传时按需下载」（pdf.min.js 313KB + mammoth 628KB），
+     不再阻塞首屏。用相对路径，兼容部署在子目录（如 GitHub Pages 的 /ai-job-resume-helper/） -->
 </head>
 <body>
 
@@ -1948,23 +1946,44 @@
     return out;
   }
 
+  /* 解析库按需加载：pdf 313KB / mammoth 628KB，只有真要上传文件时才下载，首屏不再等它们 */
+  var libLoading={};
+  function loadScriptOnce(src){
+    if(libLoading[src])return libLoading[src];
+    libLoading[src]=new Promise(function(resolve,reject){
+      var s=document.createElement('script');
+      s.src=src;s.async=true;
+      s.onload=function(){resolve();};
+      s.onerror=function(){libLoading[src]=null;reject(new Error('解析库加载失败，请检查网络后重试'));};
+      document.head.appendChild(s);
+    });
+    return libLoading[src];
+  }
+  function ensureParser(ext){
+    if(ext==='pdf')return window.pdfjsLib?Promise.resolve():loadScriptOnce('vendor/pdf.min.js');
+    if(ext==='docx'||ext==='doc')return window.mammoth?Promise.resolve():loadScriptOnce('vendor/mammoth.browser.min.js');
+    return Promise.reject(new Error('仅支持 PDF / DOCX 文件'));
+  }
+
   $('resumeFile').addEventListener('change',function(e){
     var file=e.target.files&&e.target.files[0];if(!file)return;
     var ext=(file.name.split('.').pop()||'').toLowerCase();var status=$('uploadStatus');
     status.textContent='正在解析 '+file.name+' …';
     function fail(msg){status.textContent='解析失败：'+msg+'（可直接粘贴文本）';status.className='upload-status warn';}
-    file.arrayBuffer().then(function(buf){
+    ensureParser(ext).then(function(){
+      return file.arrayBuffer();
+    }).then(function(buf){
       var rawBase64=arrayBufferToBase64(buf);
       var parsePromise;
       if(ext==='pdf'){
-        if(!window.pdfjsLib)throw new Error('PDF 解析库未加载，请刷新页面重试');
+        if(!window.pdfjsLib)throw new Error('PDF 解析组件未就绪，请重新选择文件');
         window.pdfjsLib.GlobalWorkerOptions.workerSrc='vendor/pdf.worker.min.js';
         parsePromise=window.pdfjsLib.getDocument({data:new Uint8Array(buf)}).promise.then(function(pdf){
           var jobs=[];for(var i=1;i<=pdf.numPages;i++)jobs.push(pdf.getPage(i).then(function(page){return page.getTextContent().then(function(tc){return joinPdfItems(tc.items);});}));
           return Promise.all(jobs).then(function(pages){return pages.join('\n');});
         });
       }else if(ext==='docx'||ext==='doc'){
-        if(!window.mammoth)throw new Error('Word 解析库未加载，请刷新页面重试');
+        if(!window.mammoth)throw new Error('Word 解析组件未就绪，请重新选择文件');
         parsePromise=window.mammoth.extractRawText({arrayBuffer:buf}).then(function(res){return res.value||'';});
       }else{
         throw new Error('仅支持 PDF / DOCX 文件');
